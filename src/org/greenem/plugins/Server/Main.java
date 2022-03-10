@@ -3,72 +3,45 @@ package org.greenem.plugins.Server;
 import static org.greenem.plugins.Server.SimpleLogger.log;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Chunk;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World.Environment;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.player.PlayerItemHeldEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerPortalEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.generator.ChunkGenerator;
-import org.bukkit.generator.ChunkGenerator.BiomeGrid;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.greenem.plugins.Server.completers.EmptyCompleterNoArgs;
-import org.greenem.plugins.Server.completers.MhGmCompleter;
-import org.greenem.plugins.Server.completers.MhProblemsCompleter;
-import org.greenem.plugins.Server.completers.MhStartCompleter;
 
 //import com.mysql.jdbc.Connection;
 
-import org.bukkit.inventory.meta.CompassMeta;
 
 
 public class Main extends JavaPlugin implements Listener {
 	
 	Logger log = getLogger();
-	public ArrayList<String> old1 = new ArrayList<>();
 
 	public File configsDirectory;
 	public File mainConfigDirectory;
-	
-	public static String javaString = "java"; //"\"C:\\Program Files\\Java\\jdk-17.0.1\\bin\\java\"";
-//	public static String launchServerFileName;
 	
 	Plugin plugin = this;
 	
 	@Override
 	public void onDisable() {
-		log(ChatColor.RED + "Your Manhunt plugin has been disabled.");
+		log(ChatColor.RED + "Your Portable Server plugin has been disabled.");
 	}
 
 	@Override
 	public void onEnable() {
-		log(ChatColor.GREEN + "Your Manhunt plugin has been enabled!");
+		log(ChatColor.GREEN + "Your Portable Server plugin has been enabled!");
 		
 		getServer().getPluginManager().registerEvents(this, this);
 		RegisterAllCommands();
@@ -77,6 +50,33 @@ public class Main extends JavaPlugin implements Listener {
 		loadConfig();
 		
 		//healTests();
+	}
+	
+	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args){
+		Player p = null;
+		String pName = "";
+		try {
+			p = (Player) sender;
+			pName = p.getName();
+		} catch (ClassCastException e) {}
+		
+		if (cmd.getName().equalsIgnoreCase("mhreloadconfig")) {
+			if(!isSenderAPlayerOrConsole(sender)) {
+				return true;
+			}
+			loadConfig();
+		}
+		else if(cmd.getName().equalsIgnoreCase("gm")){
+			if(isSenderAPlayerOrConsole(sender)) {
+				GmCommand(sender, args);
+			}
+		}
+		else if(cmd.getName().equalsIgnoreCase("heal")){
+			if(isSenderAPlayerOrConsole(sender)) {
+				HealCommand(sender, p, null, args);
+			}
+		}
+		return false;
 	}
 	
 	public void logCastEx(String currentKey) {
@@ -152,33 +152,6 @@ public class Main extends JavaPlugin implements Listener {
 			return false;
 		}
 		return true;
-	}
-	
-	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args){
-		Player p = null;
-		String pName = "";
-		try {
-			p = (Player) sender;
-			pName = p.getName();
-		} catch (ClassCastException e) {}
-		
-		if (cmd.getName().equalsIgnoreCase("mhreloadconfig")) {
-			if(!isSenderAPlayerOrConsole(sender)) {
-				return true;
-			}
-			loadConfig();
-		}
-		else if(cmd.getName().equalsIgnoreCase("gm")){
-			if(isSenderAPlayerOrConsole(sender)) {
-				GmCommand(sender, args);
-			}
-		}
-		else if(cmd.getName().equalsIgnoreCase("heal")){
-			if(isSenderAPlayerOrConsole(sender)) {
-				HealCommand(sender, p, null, args);
-			}
-		}
-		return false;
 	}
 	
 	public void GmCommand(CommandSender sender, String[] args) { // what if it's already in some plugin?

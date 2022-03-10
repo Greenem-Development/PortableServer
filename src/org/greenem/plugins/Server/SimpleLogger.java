@@ -1,7 +1,6 @@
 package org.greenem.plugins.Server;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 
 public class SimpleLogger {
 	public static String pluginName = "Manhunt";
