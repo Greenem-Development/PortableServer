@@ -1,0 +1,14 @@
+name: Server
+main: org.greenem.plugins.Server.Main
+version: 3.0.0
+api-version: 1.18
+commands:
+   gm:
+      description: Fast gamemode
+      permission: op
+   heal:
+      description: Healing
+      permission: op
+   mhreloadconfig:
+      description: Reload the plugin config
+      permission: op
