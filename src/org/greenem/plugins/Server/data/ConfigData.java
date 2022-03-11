@@ -1,4 +1,4 @@
-package org.greenem.plugins.Server;
+package org.greenem.plugins.Server.data;
 
 public class ConfigData {
 	public static boolean allowGmCommandForOps = true;

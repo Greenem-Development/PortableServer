@@ -1,6 +1,6 @@
-package org.greenem.plugins.Server;
+package org.greenem.plugins.Server.main;
 
-import static org.greenem.plugins.Server.SimpleLogger.log;
+import static org.greenem.plugins.Server.util.SimpleLogger.log;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.logging.Logger;
 import org.bukkit.event.Listener;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -20,19 +21,20 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.greenem.plugins.Server.data.ConfigData;
+import org.greenem.plugins.Server.game.GameManager;
+import org.greenem.plugins.Server.game.Minigame;
 
 //import com.mysql.jdbc.Connection;
 
-
-
 public class Main extends JavaPlugin implements Listener {
-	
+	Plugin plugin = this;	
 	Logger log = getLogger();
 
 	public File configsDirectory;
 	public File mainConfigDirectory;
 	
-	Plugin plugin = this;
+	public GameManager gameManager = null;
 	
 	@Override
 	public void onDisable() {
@@ -50,6 +52,8 @@ public class Main extends JavaPlugin implements Listener {
 		loadConfig();
 		
 		//healTests();
+		
+		gameManager = new GameManager();
 	}
 	
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args){
@@ -74,6 +78,16 @@ public class Main extends JavaPlugin implements Listener {
 		else if(cmd.getName().equalsIgnoreCase("heal")){
 			if(isSenderAPlayerOrConsole(sender)) {
 				HealCommand(sender, p, null, args);
+			}
+		}
+		else if(cmd.getName().equalsIgnoreCase("minigametest1")){
+			if(isSenderAPlayer(sender)) {
+				gameManager.minigameType = Minigame.MURDER_MUSTERY;
+//				gameManager.players.add(sender.getName());
+				for (Player serverPlayer : Bukkit.getOnlinePlayers()) { // for test
+					gameManager.players.add(serverPlayer.getName());
+				}
+				gameManager.start();
 			}
 		}
 		return false;

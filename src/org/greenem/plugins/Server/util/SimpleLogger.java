@@ -1,4 +1,4 @@
-package org.greenem.plugins.Server;
+package org.greenem.plugins.Server.util;
 
 import org.bukkit.Bukkit;
 
