@@ -1,5 +1,5 @@
 name: Server
-main: org.greenem.plugins.Server.Main
+main: org.greenem.plugins.Server.main.Main
 version: 3.0.0
 api-version: 1.18
 commands:
@@ -9,6 +9,6 @@ commands:
    heal:
       description: Healing
       permission: op
-   mhreloadconfig:
+   reloadserverconfig:
       description: Reload the plugin config
       permission: op

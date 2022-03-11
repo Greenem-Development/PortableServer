@@ -22,6 +22,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.greenem.plugins.Server.data.ConfigData;
+import org.greenem.plugins.Server.events.MainEvents;
 import org.greenem.plugins.Server.game.GameManager;
 import org.greenem.plugins.Server.game.Minigame;
 
@@ -46,6 +47,7 @@ public class Main extends JavaPlugin implements Listener {
 		log(ChatColor.GREEN + "Your Portable Server plugin has been enabled!");
 		
 		getServer().getPluginManager().registerEvents(this, this);
+		getServer().getPluginManager().registerEvents(new MainEvents(), this);
 		RegisterAllCommands();
 		InitFiles();
 		
