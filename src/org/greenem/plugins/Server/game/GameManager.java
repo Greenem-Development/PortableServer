@@ -26,6 +26,18 @@ public class GameManager {
 			case MURDER_MUSTERY: {
 				
 			}
+			case AMONG_US: {
+				
+			}
+			case SKYWARS: {
+				
+			}
+			case BEDWARS: {
+				
+			}
+			case TNT_RUN: {
+				
+			}
 		default:
 			throw new IllegalArgumentException("Unexpected value in prepareWorld: " + minigameType);
 		}
