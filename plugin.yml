@@ -24,3 +24,6 @@ commands:
    coordstest2:
       description: Reload the plugin config
       default: true
+   startgame:
+      description: Reload the plugin config
+      default: true

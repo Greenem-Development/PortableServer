@@ -19,10 +19,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.greenem.plugins.Server.data.ConfigData;
 import org.greenem.plugins.Server.data.MinigamesStaticData;
 import org.greenem.plugins.Server.data.OutsideData;
+import org.greenem.plugins.Server.data.References;
 import org.greenem.plugins.Server.data.Structure;
-import org.greenem.plugins.Server.data.Worlds;
 import org.greenem.plugins.Server.events.MainEvents;
 import org.greenem.plugins.Server.game.GameManager;
+import org.greenem.plugins.Server.game.GameStartManager;
 import org.greenem.plugins.Server.game.Minigame;
 import org.greenem.plugins.Server.util.SimpleLogger;
 
@@ -86,6 +87,7 @@ public class Main extends JavaPlugin implements Listener {
 				int success = gameManager.start();
 				if(success==0) {
 					Structure.gameManagers.add(gameManager);
+					References.playersInGame.add(pName);
 				}
 				else if(success==-1) {
 					sender.sendMessage(ChatColor.RED + "There is currently no world avaliable to start the game");
@@ -100,6 +102,7 @@ public class Main extends JavaPlugin implements Listener {
 			if(isSenderAPlayer(sender)) {
 				Structure.gameManagers.get(0).stop();
 				Structure.gameManagers.remove(0);
+				References.playersInGame.remove(pName);
 			}
 		}
 		else if(cmd.getName().equalsIgnoreCase("coordstest1")){
@@ -112,6 +115,11 @@ public class Main extends JavaPlugin implements Listener {
 			if(isSenderAPlayer(sender)) {
 				log.info(coordsStr);
 				coordsStr = "";
+			}
+		}
+		else if(cmd.getName().equalsIgnoreCase("startgame")){
+			if(isSenderAPlayer(sender)) {
+				GameStartManager.setupGameStart(sender, cmd, commandLabel, args);
 			}
 		}
 		return false;

@@ -1,6 +1,7 @@
 package miscellaneous;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 
 import org.bukkit.Bukkit;
@@ -12,9 +13,54 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.greenem.plugins.Server.data.ConfigData;
 
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.TextComponent;
+
 public class Stash {
+	public static ItemStack createGuiItem(final Material material, final String name, final String... lore) {
+        final ItemStack item = new ItemStack(material, 1);
+        final ItemMeta meta = item.getItemMeta();
+
+        // Set the name of the item
+        meta.setDisplayName(name);
+
+        // Set the lore of the item
+        meta.setLore(Arrays.asList(lore));
+
+        item.setItemMeta(meta);
+
+        return item;
+    }
+	
+	public static ItemStack createGuiItem(final Material material, final String name, final ArrayList<String> lore) {
+        final ItemStack item = new ItemStack(material, 1);
+        final ItemMeta meta = item.getItemMeta();
+        
+        String[] loreArray = new String[lore.size()];
+        for(int i = 0; i < lore.size(); i++) {
+        	loreArray[i] = lore.get(i);
+        }
+        
+        // Set the name of the item
+        meta.setDisplayName(name);
+
+        // Set the lore of the item
+        meta.setLore(Arrays.asList(loreArray));
+
+        item.setItemMeta(meta);
+
+        return item;
+    }
+	
+	public static void sendClickableMessage(Player p) {
+        TextComponent message = new TextComponent("Click me");
+        message.setClickEvent( new ClickEvent( ClickEvent.Action.RUN_COMMAND, "/tp @s ~ ~2 ~" ) );
+        p.spigot().sendMessage( message );
+	}
+	
 	public Location IsBlockNearby(Player p, Material material, int distanse) {
         ArrayList<Location> temp = new ArrayList<Location>();
         ArrayList<Double> dis = new ArrayList<Double>();
