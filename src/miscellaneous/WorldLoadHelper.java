@@ -22,8 +22,6 @@ public class WorldLoadHelper {
 	public static boolean worldExists(String name) {
 		File worldsDir = Bukkit.getWorldContainer();
 		File theWorldFile = new File(worldsDir, name);
-//		SimpleLogger.log(theWorldFile.exists());
-//		SimpleLogger.log(theWorldFile.isDirectory());
 		return theWorldFile.exists() && theWorldFile.isDirectory(); // does isDirectory() always work fine?..
 	}
 	

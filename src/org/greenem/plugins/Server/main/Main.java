@@ -41,10 +41,7 @@ public class Main extends JavaPlugin implements Listener {
 		
 		getServer().getPluginManager().registerEvents(this, this);
 		getServer().getPluginManager().registerEvents(new MainEvents(), this);
-		RegisterAllCommands();
-		InitFiles();
-		MinigamesStaticData.init();
-		MurderMysterySpawnLocations.init();
+		initAll();
 		
 		loadConfig();
 	}
@@ -195,6 +192,13 @@ public class Main extends JavaPlugin implements Listener {
 		return true;
 	}
 	
+	public void initAll() {
+		RegisterAllCommands();
+		InitFiles();
+		MinigamesStaticData.init();
+		MurderMysterySpawnLocations.init();
+	}
+	
 	public void InitFiles() {
 		OutsideData.configsDirectory = new File(getServer().getWorldContainer(), "configs");
 		OutsideData.mainConfigDirectory = new File(OutsideData.configsDirectory, "Server");
@@ -203,6 +207,6 @@ public class Main extends JavaPlugin implements Listener {
 	}
 	
 	public void RegisterAllCommands() {
-//		getCommand("mhproblems").setTabCompleter(new MhProblemsCompleter());
+//		getCommand("command").setTabCompleter(new EmptyCompleterNoArgs());
 	}
 }

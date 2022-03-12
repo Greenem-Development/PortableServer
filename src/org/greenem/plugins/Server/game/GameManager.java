@@ -135,8 +135,10 @@ public class GameManager {
 		ArrayList<Location> allLocs = MurderMysterySpawnLocations.locs.get(map);
 		for (String pName : actualPlayers) {
 			int spawnLocNum = rand.nextInt(allLocs.size());
+			float rotation = rand.nextFloat(-180, 180);
 			SimpleLogger.log(map);
-			Location loc = allLocs.get(spawnLocNum).clone().add(0.5, 0.5, 0.5);
+			Location loc = allLocs.get(spawnLocNum).clone().add(0.5, 0, 0.5);
+			loc.setYaw(rotation);
 			loc.setWorld(Bukkit.getWorld(worldName));
 			Bukkit.getPlayerExact(pName).teleport(loc);
 		}
