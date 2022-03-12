@@ -3,11 +3,11 @@ package org.greenem.plugins.Server.util;
 import org.bukkit.Bukkit;
 
 public class SimpleLogger {
-	public static String pluginName = "Manhunt";
+	public static String pluginName = "PortableServer";
 	public static String color = ""; // + ChatColor.WHITE;
 	
 	public static void log(String s) {
-		s = color + "[" + pluginName + "]" + s;
+		s = color + "[" + pluginName + "] " + s;
 		Bukkit.getConsoleSender().sendMessage(s);
 	}
 	

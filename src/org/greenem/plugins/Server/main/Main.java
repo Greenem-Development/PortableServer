@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import org.bukkit.event.Listener;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -19,17 +20,20 @@ import org.greenem.plugins.Server.data.ConfigData;
 import org.greenem.plugins.Server.data.MinigamesStaticData;
 import org.greenem.plugins.Server.data.OutsideData;
 import org.greenem.plugins.Server.data.Structure;
+import org.greenem.plugins.Server.data.Worlds;
 import org.greenem.plugins.Server.events.MainEvents;
 import org.greenem.plugins.Server.game.GameManager;
 import org.greenem.plugins.Server.game.Minigame;
 import org.greenem.plugins.Server.util.SimpleLogger;
 
+import minigames.murderMystery.MurderMysterySpawnLocations;
 import miscellaneous.Stash;
 
 public class Main extends JavaPlugin implements Listener {
 	
 	Plugin plugin = this;
 	Logger log = getLogger();
+	private String coordsStr = "";
 
 	@Override
 	public void onEnable() {
@@ -40,6 +44,7 @@ public class Main extends JavaPlugin implements Listener {
 		RegisterAllCommands();
 		InitFiles();
 		MinigamesStaticData.init();
+		MurderMysterySpawnLocations.init();
 		
 		loadConfig();
 	}
@@ -92,6 +97,24 @@ public class Main extends JavaPlugin implements Listener {
 					sender.sendMessage(ChatColor.RED + "An error occured while starting the game");
 					SimpleLogger.log(ChatColor.RED + "STARTING A GAME DIDN'T SUCCEED! (Minigame type: " + gameManager.minigameType + ")");
 				}
+			}
+		}
+		else if(cmd.getName().equalsIgnoreCase("minigametest2")){
+			if(isSenderAPlayer(sender)) {
+				Structure.gameManagers.get(0).stop();
+				Structure.gameManagers.remove(0);
+			}
+		}
+		else if(cmd.getName().equalsIgnoreCase("coordstest1")){
+			if(isSenderAPlayer(sender)) {
+				Location l = ((Player)sender).getLocation();
+				coordsStr += "current.add(new Location(Bukkit.getWorld(\"\"), " + l.getBlockX() + ", " + l.getBlockY() + ", " + l.getBlockZ() + "));\n";
+			}
+		}
+		else if(cmd.getName().equalsIgnoreCase("coordstest2")){
+			if(isSenderAPlayer(sender)) {
+				log.info(coordsStr);
+				coordsStr = "";
 			}
 		}
 		return false;

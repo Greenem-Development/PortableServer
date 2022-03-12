@@ -12,3 +12,15 @@ commands:
    reloadserverconfig:
       description: Reload the plugin config
       permission: op
+   minigametest1:
+      description: Reload the plugin config
+      default: true
+   minigametest2:
+      description: Reload the plugin config
+      default: true
+   coordstest1:
+      description: Reload the plugin config
+      default: true
+   coordstest2:
+      description: Reload the plugin config
+      default: true

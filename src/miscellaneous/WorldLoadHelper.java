@@ -6,6 +6,7 @@ import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
+import org.greenem.plugins.Server.util.SimpleLogger;
 
 public class WorldLoadHelper {
 	public static boolean worldLoaded(String name) {
@@ -21,6 +22,8 @@ public class WorldLoadHelper {
 	public static boolean worldExists(String name) {
 		File worldsDir = Bukkit.getWorldContainer();
 		File theWorldFile = new File(worldsDir, name);
+//		SimpleLogger.log(theWorldFile.exists());
+//		SimpleLogger.log(theWorldFile.isDirectory());
 		return theWorldFile.exists() && theWorldFile.isDirectory(); // does isDirectory() always work fine?..
 	}
 	
