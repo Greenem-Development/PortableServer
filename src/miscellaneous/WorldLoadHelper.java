@@ -1,5 +1,6 @@
 package miscellaneous;
 
+import java.io.File;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -18,7 +19,9 @@ public class WorldLoadHelper {
 	}
 	
 	public static boolean worldExists(String name) {
-		return true;
+		File worldsDir = Bukkit.getWorldContainer();
+		File theWorldFile = new File(worldsDir, name);
+		return theWorldFile.exists() && theWorldFile.isDirectory(); // does isDirectory() always work fine?..
 	}
 	
 	public static World loadWorld (String name) {

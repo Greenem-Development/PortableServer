@@ -22,9 +22,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.greenem.plugins.Server.data.ConfigData;
+import org.greenem.plugins.Server.data.Structure;
 import org.greenem.plugins.Server.events.MainEvents;
 import org.greenem.plugins.Server.game.GameManager;
 import org.greenem.plugins.Server.game.Minigame;
+import org.greenem.plugins.Server.util.SimpleLogger;
 
 //import com.mysql.jdbc.Connection;
 
@@ -34,8 +36,6 @@ public class Main extends JavaPlugin implements Listener {
 
 	public File configsDirectory;
 	public File mainConfigDirectory;
-	
-	public GameManager gameManager = null;
 	
 	@Override
 	public void onDisable() {
@@ -54,8 +54,6 @@ public class Main extends JavaPlugin implements Listener {
 		loadConfig();
 		
 		//healTests();
-		
-		gameManager = new GameManager();
 	}
 	
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args){
@@ -84,12 +82,23 @@ public class Main extends JavaPlugin implements Listener {
 		}
 		else if(cmd.getName().equalsIgnoreCase("minigametest1")){
 			if(isSenderAPlayer(sender)) {
+				GameManager gameManager = new GameManager();
 				gameManager.minigameType = Minigame.MURDER_MUSTERY;
 //				gameManager.players.add(sender.getName());
 				for (Player serverPlayer : Bukkit.getOnlinePlayers()) { // for test
 					gameManager.players.add(serverPlayer.getName());
 				}
-				gameManager.start();
+				int success = gameManager.start();
+				if(success==0) {
+					Structure.gameManagers.add(gameManager);
+				}
+				else if(success==-1) {
+					sender.sendMessage(ChatColor.RED + "There is currently no world avaliable to start the game");
+				}
+				else if(success==1) {
+					sender.sendMessage(ChatColor.RED + "An error occured while starting the game");
+					SimpleLogger.log(ChatColor.RED + "STARTING A GAME DIDN'T SUCCEED! (Minigame type: " + gameManager.minigameType + ")");
+				}
 			}
 		}
 		return false;
