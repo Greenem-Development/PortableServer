@@ -3,7 +3,7 @@ package org.greenem.plugins.Server.game;
 public enum Minigame {
 	SKYWARS,
 	BEDWARS,
-	MURDER_MUSTERY,
+	MURDER_MYSTERY,
 	AMONG_US,
 	TNT_RUN,
 	FEATHER_FALLING,

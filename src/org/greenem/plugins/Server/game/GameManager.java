@@ -10,10 +10,10 @@ import miscellaneous.WorldLoadHelper;
 
 public class GameManager {
 	public Minigame minigameType = null;
+	public String map = "default";
 	public ArrayList<String> players = new ArrayList<>();
 	public ArrayList<String> actualPlayers = new ArrayList<>();
 	public String worldName = null;
-	public String map = null;
 	
 	public int start() {
 		prepareWorld();
@@ -25,7 +25,7 @@ public class GameManager {
 		}
 		for (String s : actualPlayers) {
 			switch (minigameType) {
-			case MURDER_MUSTERY: {
+			case MURDER_MYSTERY: {
 				Bukkit.getPlayerExact(s).teleport(new Location(Bukkit.getWorld(worldName), 0, 101, 0));
 			}
 			case AMONG_US: {
@@ -53,31 +53,31 @@ public class GameManager {
 	
 	public void prepareWorld() {
 		switch (minigameType) {
-			case MURDER_MUSTERY: {
-				worldName = searchForAvaliableWorld("murder_mystery_");
-			}
-			case AMONG_US: {
-				worldName = searchForAvaliableWorld("among_us_");
-			}
-			case SKYWARS: {
-				worldName = searchForAvaliableWorld("skywars_");
-			}
-			case BEDWARS: {
-				worldName = searchForAvaliableWorld("bedwars_");
-			}
-			case TNT_RUN: {
-				worldName = searchForAvaliableWorld("tnt_run_");
-			}
+		case MURDER_MYSTERY: {
+			worldName = searchForAvaliableWorld("murder_mystery", "map1");
+		}
+		case AMONG_US: {
+			worldName = searchForAvaliableWorld("among_us_", "map1");
+		}
+		case SKYWARS: {
+			worldName = searchForAvaliableWorld("skywars_", "map1");
+		}
+		case BEDWARS: {
+			worldName = searchForAvaliableWorld("bedwars_", "map1");
+		}
+		case TNT_RUN: {
+			worldName = searchForAvaliableWorld("tnt_run_", "map1");
+		}
 		default:
 			throw new IllegalArgumentException("Unexpected value in prepareWorld: " + minigameType);
 		}
 	}
 	
-	private String searchForAvaliableWorld(String minigameName) {
+	private String searchForAvaliableWorld(String minigameName, String map) {
 		boolean foundWorldsEnd = false; // does not work if like world1 doesn't exist, think about it later
 		int avaliableNumber = 1;
 		while (!foundWorldsEnd) {
-			String worldName = minigameName + avaliableNumber;
+			String worldName = minigameName + "_" + map + "_" + avaliableNumber;
 			if(WorldLoadHelper.worldExists(worldName)) {
 				if(!Worlds.usedWorlds.contains(worldName)) {
 					WorldLoadHelper.loadWorld(worldName);
