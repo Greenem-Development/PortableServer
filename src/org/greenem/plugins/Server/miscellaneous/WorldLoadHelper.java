@@ -1,4 +1,4 @@
-package miscellaneous;
+package org.greenem.plugins.Server.miscellaneous;
 
 import java.io.File;
 import java.util.List;

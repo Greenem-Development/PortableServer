@@ -1,4 +1,4 @@
-package miscellaneous;
+package org.greenem.plugins.Server.miscellaneous;
 
 import java.util.ArrayList;
 import java.util.Arrays;

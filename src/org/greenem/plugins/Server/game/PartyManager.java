@@ -11,8 +11,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-
-import miscellaneous.Stash;
+import org.greenem.plugins.Server.miscellaneous.Stash;
 
 public class PartyManager implements Listener {
 	public ArrayList<String> players = new ArrayList<>();

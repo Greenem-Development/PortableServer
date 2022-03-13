@@ -1,4 +1,4 @@
-package miscellaneous;
+package org.greenem.plugins.Server.miscellaneous;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;

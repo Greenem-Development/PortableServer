@@ -1,4 +1,4 @@
-package minigames.murderMystery;
+package org.greenem.plugins.Server.minigames.murderMystery;
 
 import java.util.ArrayList;
 import java.util.HashMap;

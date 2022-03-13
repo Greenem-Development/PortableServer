@@ -11,9 +11,8 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.greenem.plugins.Server.data.Locs;
 import org.greenem.plugins.Server.data.NamesAndLines;
 import org.greenem.plugins.Server.game.GameSelectScreen;
-
-import miscellaneous.Preparations;
-import miscellaneous.WorldLoadHelper;
+import org.greenem.plugins.Server.miscellaneous.Preparations;
+import org.greenem.plugins.Server.miscellaneous.WorldLoadHelper;
 
 public class MainEvents implements Listener {
 	@EventHandler

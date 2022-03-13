@@ -12,11 +12,10 @@ import org.greenem.plugins.Server.data.MinigamesStaticData;
 import org.greenem.plugins.Server.data.References;
 import org.greenem.plugins.Server.data.Structure;
 import org.greenem.plugins.Server.data.Worlds;
+import org.greenem.plugins.Server.minigames.murderMystery.MurderMysterySpawnLocations;
+import org.greenem.plugins.Server.miscellaneous.Preparations;
+import org.greenem.plugins.Server.miscellaneous.WorldLoadHelper;
 import org.greenem.plugins.Server.util.SimpleLogger;
-
-import minigames.murderMystery.MurderMysterySpawnLocations;
-import miscellaneous.Preparations;
-import miscellaneous.WorldLoadHelper;
 
 public class GameManager {
 	Random rand = new Random();
