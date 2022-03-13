@@ -20,7 +20,7 @@ public class CreatePartyManager implements CommandExecutor {
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		if(Main.isSenderAPlayer(sender)) {
-			SimpleLogger.log("References.playersParty: " + References.playersParty.toString());
+			//SimpleLogger.log("References.playersParty: " + References.playersParty.toString());
 			if(References.playersParty.get(sender.getName())==null) {
 				
 				PartyManager partyManager = new PartyManager(sender.getName());
@@ -52,6 +52,7 @@ public class CreatePartyManager implements CommandExecutor {
 				}
 				sender.sendMessage(ChatColor.GREEN + "The invitation link was sent to other players");
 				partyManager.updateGui();
+				Bukkit.getPluginManager().registerEvents(partyManager, Main.getPlugin(Main.class));
 				partyManager.openGui((Player)sender);
 			}
 			else {

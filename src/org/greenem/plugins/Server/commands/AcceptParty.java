@@ -61,7 +61,7 @@ public class AcceptParty implements CommandExecutor {
 					if(leader!=null) {
 						leader.sendMessage(ChatColor.WHITE + "" + ChatColor.BOLD + sender.getName() + ChatColor.RESET + "" + ChatColor.GREEN + " joined your party!");
 					}
-					SimpleLogger.log(References.invitationIdToParty.toString());
+					//SimpleLogger.log(References.invitationIdToParty.toString());
 				}
 				else {
 					sender.sendMessage(ChatColor.RED + "You should put a number there!");

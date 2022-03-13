@@ -20,6 +20,10 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 
 public class Stash {
+	public static int getSlotNumber(int row, int column) {
+		return (row-1)*9-1 + column;
+	}
+	
 	public static ItemStack createGuiItem(final Material material, final String name, final String... lore) {
         final ItemStack item = new ItemStack(material, 1);
         final ItemMeta meta = item.getItemMeta();

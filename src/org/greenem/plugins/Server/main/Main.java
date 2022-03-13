@@ -26,6 +26,7 @@ import org.greenem.plugins.Server.data.References;
 import org.greenem.plugins.Server.data.Structure;
 import org.greenem.plugins.Server.events.MainEvents;
 import org.greenem.plugins.Server.game.GameManager;
+import org.greenem.plugins.Server.game.GameSelectScreen;
 import org.greenem.plugins.Server.game.CreatePartyManager;
 import org.greenem.plugins.Server.game.Minigame;
 import org.greenem.plugins.Server.util.SimpleLogger;
@@ -35,8 +36,8 @@ import miscellaneous.Stash;
 
 public class Main extends JavaPlugin implements Listener {
 	
-	Plugin plugin = this;
-	Logger log = getLogger();
+	public Plugin plugin = this;
+	public Logger log = getLogger();
 	private String coordsStr = "";
 
 	@Override
@@ -224,6 +225,7 @@ public class Main extends JavaPlugin implements Listener {
 		MinigamesStaticData.init();
 		MurderMysterySpawnLocations.init();
 		OutsideData.init();
+		GameSelectScreen.init();
 	}
 	
 	public void InitFiles() {

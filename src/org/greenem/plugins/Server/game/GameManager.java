@@ -14,6 +14,7 @@ import org.greenem.plugins.Server.data.Worlds;
 import org.greenem.plugins.Server.util.SimpleLogger;
 
 import minigames.murderMystery.MurderMysterySpawnLocations;
+import miscellaneous.Preparations;
 import miscellaneous.WorldLoadHelper;
 
 public class GameManager {
@@ -61,6 +62,7 @@ public class GameManager {
 		for (Player p : Bukkit.getOnlinePlayers()) {
 			if(p.getWorld().getName().equals(worldName)) {
 				p.teleport(Locs.mainWorldSpawn);
+				Preparations.preparePlayerInHub(p);
 			}
 		}
 		Bukkit.unloadWorld(worldName, true); // later false
