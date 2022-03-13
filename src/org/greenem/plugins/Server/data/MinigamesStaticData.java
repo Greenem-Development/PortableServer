@@ -9,10 +9,12 @@ import org.greenem.plugins.Server.game.Minigame;
 public class MinigamesStaticData {
 	public static Map<Minigame, String> defaultMap = new HashMap<>();
 	public static Map<Minigame, ArrayList<String>> minigameMaps = new HashMap<>();
+	public static Map<Minigame, Integer> minimumPlayersForGame = new HashMap<>();
 	
 	public static void init() {
 		initDefaults();
 		initMinigameMaps();
+		initMinimumPlayersForGame();
 	}
 	
 	private static void initDefaults() {
@@ -26,7 +28,7 @@ public class MinigamesStaticData {
 		// and others
 	}
 	
-	public String getFullMapName(Minigame minigame, String map) {
+	public static String getFullMapName(Minigame minigame, String map) {
 		switch (minigame) {
 		case MURDER_MYSTERY: {
 			switch (map) {
@@ -40,5 +42,9 @@ public class MinigamesStaticData {
 		default:
 			throw new IllegalArgumentException("Unexpected value in getFullMapName#minigame: " + minigame);
 		}
+	}
+	
+	private static void initMinimumPlayersForGame() {
+		minimumPlayersForGame.put(Minigame.MURDER_MYSTERY, 2); //3
 	}
 }

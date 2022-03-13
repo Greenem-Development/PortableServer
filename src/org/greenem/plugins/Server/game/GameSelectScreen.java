@@ -36,7 +36,8 @@ public class GameSelectScreen implements Listener {
 			ItemStack item = e.getCurrentItem();
 			if(item!=null) {
 				if(item.getType().equals(Material.NETHERITE_HOE)) {
-					
+					// add to party if not already
+					// set current game in menu for party class
 				}
 			}
 		}

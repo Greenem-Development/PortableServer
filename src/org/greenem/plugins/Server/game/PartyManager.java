@@ -51,6 +51,7 @@ public class PartyManager implements Listener {
 		setItemOnBoth(3, Stash.createGuiItem(Material.MAP, ChatColor.WHITE + "Map", ChatColor.WHITE + "Main"));
 		setItemOnBoth(5, Stash.createGuiItem(Material.IRON_SWORD, ChatColor.WHITE + "Murderers", ChatColor.WHITE + "1"));
 		setItemOnBoth(7, Stash.createGuiItem(Material.BOW, ChatColor.WHITE + "Detectives", ChatColor.WHITE + "1"));
+		setItemOnBoth(9, Stash.createGuiItem(Material.CLOCK, ChatColor.WHITE + "Max time", ChatColor.WHITE + "5 Minutes"));
 		
 		gameStartScreenLeader.setItem(Stash.getSlotNumber(3, 5), Stash.createGuiItem(Material.GREEN_CONCRETE, ChatColor.WHITE + "Start"));
 		gameStartScreenNormal.setItem(Stash.getSlotNumber(3, 5), Stash.createGuiItem(Material.RED_CONCRETE, ChatColor.WHITE + "Close"));

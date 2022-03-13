@@ -9,6 +9,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.greenem.plugins.Server.data.Locs;
 import org.greenem.plugins.Server.data.MinigamesStaticData;
+import org.greenem.plugins.Server.data.References;
 import org.greenem.plugins.Server.data.Structure;
 import org.greenem.plugins.Server.data.Worlds;
 import org.greenem.plugins.Server.util.SimpleLogger;
@@ -25,6 +26,7 @@ public class GameManager {
 	public ArrayList<String> players = new ArrayList<>();
 	public ArrayList<String> actualPlayers = new ArrayList<>();
 	public String worldName = null;
+	public ExtraGameData extraGameData;
 	
 	public int start() {
 		SimpleLogger.log("start");
@@ -63,6 +65,7 @@ public class GameManager {
 			if(p.getWorld().getName().equals(worldName)) {
 				p.teleport(Locs.mainWorldSpawn);
 				Preparations.preparePlayerInHub(p);
+				References.playersInGame.remove(p.getName());
 			}
 		}
 		Bukkit.unloadWorld(worldName, true); // later false
