@@ -13,23 +13,23 @@ commands:
       description: Reload the plugin config
       permission: op
    minigametest1:
-      description: Reload the plugin config
+      description: No description
       default: true
    minigametest2:
-      description: Reload the plugin config
+      description: No description
       default: true
    coordstest1:
-      description: Reload the plugin config
+      description: No description
       default: true
    coordstest2:
-      description: Reload the plugin config
+      description: No description
       default: true
-   startgame:
-      description: Reload the plugin config
+   createparty:
+      description: No description
       default: true
    acceptparty:
-      description: Reload the plugin config
+      description: No description
       default: true
    leaveparty:
-      description: Reload the plugin config
+      description: No description
       default: true

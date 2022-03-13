@@ -10,7 +10,9 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.greenem.plugins.Server.data.Locs;
 import org.greenem.plugins.Server.data.NamesAndLines;
+import org.greenem.plugins.Server.data.References;
 import org.greenem.plugins.Server.game.GameSelectScreen;
+import org.greenem.plugins.Server.game.PartyManager;
 import org.greenem.plugins.Server.miscellaneous.Preparations;
 import org.greenem.plugins.Server.miscellaneous.WorldLoadHelper;
 
@@ -33,8 +35,18 @@ public class MainEvents implements Listener {
 	
 	@EventHandler
 	public static void itemInHandClick(PlayerInteractEvent e) {
+		Player p = e.getPlayer();
 		if(e.getItem()!=null && e.getItem().getType()==Material.NETHER_STAR && e.getItem().getItemMeta().getDisplayName().equals(NamesAndLines.gameMenuItemName)) {
-			e.getPlayer().openInventory(GameSelectScreen.menu);
+			PartyManager pm = References.playersParty.get(p.getName());
+			if(pm==null || (pm!=null && pm.selectedMinigame==null)) { // do I need the second null check?
+				e.getPlayer().openInventory(GameSelectScreen.menu);
+			}
+			else if(pm.leader.equals(p.getName())) {
+				e.getPlayer().openInventory(pm.gameStartScreenLeader);
+			}
+			else {
+				e.getPlayer().openInventory(pm.gameStartScreenNormal);
+			}
 		}
 	}
 }

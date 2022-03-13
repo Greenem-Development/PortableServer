@@ -43,8 +43,6 @@ public class Main extends JavaPlugin implements Listener {
 	public void onEnable() {
 		log(ChatColor.GREEN + "Your Portable Server plugin has been enabled!");
 		
-		getServer().getPluginManager().registerEvents(this, this);
-		getServer().getPluginManager().registerEvents(new MainEvents(), this);
 		initAll();
 		
 		loadConfig();
@@ -52,6 +50,9 @@ public class Main extends JavaPlugin implements Listener {
 	
 	@Override
 	public void onDisable() {
+		for (Player p : Bukkit.getOnlinePlayers()) {
+			p.closeInventory();
+		}
 		log(ChatColor.RED + "Your Portable Server plugin has been disabled.");
 	}
 	
@@ -221,6 +222,7 @@ public class Main extends JavaPlugin implements Listener {
 	public void initAll() {
 		RegisterAllCommands();
 		InitFiles();
+		RegisterAllListeners();
 		MinigamesStaticData.init();
 		MurderMysterySpawnLocations.init();
 		OutsideData.init();
@@ -237,7 +239,13 @@ public class Main extends JavaPlugin implements Listener {
 	public void RegisterAllCommands() {
 		getCommand("acceptparty").setExecutor(new AcceptParty());
 		getCommand("leaveparty").setExecutor(new LeaveParty());		
-		getCommand("startgame").setExecutor(new CreatePartyManager());
+		getCommand("createparty").setExecutor(new CreatePartyManager());
 //		getCommand("command").setTabCompleter(new EmptyCompleterNoArgs());
+	}
+	
+	public void RegisterAllListeners() {
+		getServer().getPluginManager().registerEvents(this, this);
+		getServer().getPluginManager().registerEvents(new MainEvents(), this);
+		getServer().getPluginManager().registerEvents(new GameSelectScreen(), this);
 	}
 }

@@ -20,45 +20,48 @@ public class CreatePartyManager implements CommandExecutor {
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		if(Main.isSenderAPlayer(sender)) {
-			//SimpleLogger.log("References.playersParty: " + References.playersParty.toString());
-			if(References.playersParty.get(sender.getName())==null) {
-				
-				PartyManager partyManager = new PartyManager(sender.getName());
-				int id = References.addInvitationIdToParty(partyManager);
-				References.playersParty.put(sender.getName(), partyManager);
-				
-				for (Player player : Bukkit.getOnlinePlayers()) {
-					if(!References.playersInGame.contains(player.getName())) {
-						if(!player.equals(sender)) { // uncomment
-							TextComponent message = new TextComponent(ChatColor.WHITE + "" + ChatColor.BOLD + sender.getName() + ChatColor.RESET + "" + ChatColor.WHITE + " is staring a game, ");
-							TextComponent clickable = new TextComponent(ChatColor.UNDERLINE + "" + ChatColor.BOLD + "Click here to join!");
-							
-							String acceptCommand = "/acceptparty " + id;
-							
-							if(!ConfigData.allowInvitesBeforeReload) {
-								acceptCommand += " " + Calendar.getInstance().getTimeInMillis();
-							}
-							
-							if(!ConfigData.allowInvitesNicknameMismatch) {
-								acceptCommand += " " + sender.getName();
-							}
-							
-							clickable.setClickEvent(new ClickEvent( ClickEvent.Action.RUN_COMMAND, acceptCommand));
-							message.addExtra(clickable);
-		//					message.addExtra( "!" ); // can add something if needed
-					        player.spigot().sendMessage(message); //does this work on bukkit?
-						}
-					}
-				}
-				sender.sendMessage(ChatColor.GREEN + "The invitation link was sent to other players");
-				partyManager.updateGui();
-				Bukkit.getPluginManager().registerEvents(partyManager, Main.getPlugin(Main.class));
-				partyManager.openGui((Player)sender);
-			}
-			else {
-				sender.sendMessage(ChatColor.RED + "You already have a party!");
-			}
+			createParty((Player) sender);
 		}
 		return false;
+	}
+	
+	public static void createParty(Player p) {
+		if(References.playersParty.get(p.getName())==null) {
+			
+			PartyManager partyManager = new PartyManager(p.getName());
+			int id = References.addInvitationIdToParty(partyManager);
+			References.playersParty.put(p.getName(), partyManager);
+			
+			for (Player player : Bukkit.getOnlinePlayers()) {
+				if(!References.playersInGame.contains(player.getName())) {
+					if(!player.equals(p)) { // uncomment
+						TextComponent message = new TextComponent(ChatColor.WHITE + "" + ChatColor.BOLD + p.getName() + ChatColor.RESET + "" + ChatColor.WHITE + " is staring a game, ");
+						TextComponent clickable = new TextComponent(ChatColor.UNDERLINE + "" + ChatColor.BOLD + "Click here to join!");
+						
+						String acceptCommand = "/acceptparty " + id;
+						
+						if(!ConfigData.allowInvitesBeforeReload) {
+							acceptCommand += " " + Calendar.getInstance().getTimeInMillis();
+						}
+						
+						if(!ConfigData.allowInvitesNicknameMismatch) {
+							acceptCommand += " " + p.getName();
+						}
+						
+						clickable.setClickEvent(new ClickEvent( ClickEvent.Action.RUN_COMMAND, acceptCommand));
+						message.addExtra(clickable);
+	//					message.addExtra( "!" ); // can add something if needed
+				        player.spigot().sendMessage(message); //does this work on bukkit?
+					}
+				}
+			}
+			p.sendMessage(ChatColor.GREEN + "The invitation link was sent to other players");
+			partyManager.updateGui();
+			Bukkit.getPluginManager().registerEvents(partyManager, Main.getPlugin(Main.class));
+			partyManager.openGui(p);
+		}
+		else {
+			p.sendMessage(ChatColor.RED + "You already have a party!");
+		}
 	}
 }

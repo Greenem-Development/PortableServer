@@ -35,6 +35,9 @@ public class MinigamesStaticData {
 			case "default": {
 				return "Main";
 			}
+			case "map1": {
+				return "Main";
+			}
 			default:
 				throw new IllegalArgumentException("Unexpected value in getFullMapName#map: " + map);
 			}

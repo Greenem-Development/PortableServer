@@ -33,6 +33,7 @@ public class GameCreation {
 		if(success==0) {
 			Structure.gameManagers.add(gameManager);
 			References.playersInGame.add(p.getName());
+			References.playersParty.get(p.getName()).inGame = true;
 		}
 		else if(success==-1) {
 			p.sendMessage(ChatColor.RED + "There is currently no world avaliable to start the game");
