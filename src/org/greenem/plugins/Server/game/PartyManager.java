@@ -12,9 +12,14 @@ import org.bukkit.inventory.ItemStack;
 import miscellaneous.Stash;
 
 public class PartyManager {
-	public static ArrayList<String> players = new ArrayList<>();
-	public static String leader = null;
-	public static Inventory gameStartScreen = null;
+	public ArrayList<String> players = new ArrayList<>();
+	public String leader = null;
+	public Inventory gameStartScreen = null;
+	
+	public PartyManager (String leader) {
+		this.leader = leader;
+		checkExisting();
+	}
 	
 	public void checkExisting() {
 		if(gameStartScreen==null) {
@@ -23,13 +28,10 @@ public class PartyManager {
 	}
 	
 	public void openGui(Player p) {
-		checkExisting();
 		p.openInventory(gameStartScreen);
 	}
 	
 	public void updateGui() {
-		checkExisting();
-		
 		ItemStack GrayStainedPlane = Stash.createGuiItem(Material.GRAY_STAINED_GLASS_PANE, " ", " ", "");
 		gameStartScreen.all(GrayStainedPlane);
 		gameStartScreen.setItem(5, Stash.createGuiItem(Material.WHITE_STAINED_GLASS_PANE, ChatColor.WHITE + "Text", ChatColor.GOLD + "Desc", ""));

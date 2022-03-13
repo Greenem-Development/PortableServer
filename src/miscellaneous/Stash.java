@@ -130,6 +130,17 @@ public class Stash {
 	    }
 	    return true;
 	}
+	
+	public static boolean isLong(String s) {
+	    try { 
+	        Long.parseLong(s); 
+	    } catch(NumberFormatException e) { 
+	        return false; 
+	    } catch(NullPointerException e) {
+	        return false;
+	    }
+	    return true;
+	}
     
 	public static void sendActionBar(Player player, String message){
 //        CraftPlayer p = (CraftPlayer) player;

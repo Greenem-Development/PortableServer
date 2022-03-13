@@ -10,12 +10,15 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.greenem.plugins.Server.commands.AcceptParty;
+import org.greenem.plugins.Server.commands.LeaveParty;
 import org.greenem.plugins.Server.data.ConfigData;
 import org.greenem.plugins.Server.data.MinigamesStaticData;
 import org.greenem.plugins.Server.data.OutsideData;
@@ -23,7 +26,7 @@ import org.greenem.plugins.Server.data.References;
 import org.greenem.plugins.Server.data.Structure;
 import org.greenem.plugins.Server.events.MainEvents;
 import org.greenem.plugins.Server.game.GameManager;
-import org.greenem.plugins.Server.game.GameStartManager;
+import org.greenem.plugins.Server.game.CreatePartyManager;
 import org.greenem.plugins.Server.game.Minigame;
 import org.greenem.plugins.Server.util.SimpleLogger;
 
@@ -117,11 +120,6 @@ public class Main extends JavaPlugin implements Listener {
 				coordsStr = "";
 			}
 		}
-		else if(cmd.getName().equalsIgnoreCase("startgame")){
-			if(isSenderAPlayer(sender)) {
-				GameStartManager.setupGameStart(sender, cmd, commandLabel, args);
-			}
-		}
 		return false;
 	}
 	
@@ -158,6 +156,26 @@ public class Main extends JavaPlugin implements Listener {
 					logCastEx(currentKey);
 				}
 			}
+			currentKey = "allow-invites-before-reload";
+			if (c.get(currentKey) == null) {
+				c.set(currentKey, true);
+			} else {
+				try {
+					ConfigData.allowInvitesBeforeReload = (boolean) c.get(currentKey);
+				} catch (ClassCastException e) {
+					logCastEx(currentKey);
+				}
+			}
+			currentKey = "allow-invites-nickname-mismatch";
+			if (c.get(currentKey) == null) {
+				c.set(currentKey, false);
+			} else {
+				try {
+					ConfigData.allowInvitesNicknameMismatch = (boolean) c.get(currentKey);
+				} catch (ClassCastException e) {
+					logCastEx(currentKey);
+				}
+			}
 		} catch (Throwable t) {
 			log("Error while reading \"" + currentKey + "\" from the config");
 		}
@@ -180,7 +198,7 @@ public class Main extends JavaPlugin implements Listener {
 		}
 	}
 	
-	public boolean isSenderAPlayer(CommandSender sender) {
+	public static boolean isSenderAPlayer(CommandSender sender) {
 		if(sender instanceof ConsoleCommandSender) {
 			sender.sendMessage(ChatColor.RED + "You can't do it through console!");
 			return false;
@@ -192,7 +210,7 @@ public class Main extends JavaPlugin implements Listener {
 		return true;
 	}
 	
-	public boolean isSenderAPlayerOrConsole(CommandSender sender) {
+	public static boolean isSenderAPlayerOrConsole(CommandSender sender) {
 		if(!(sender instanceof Player) && !(sender instanceof ConsoleCommandSender)) {
 			sender.sendMessage(ChatColor.RED + "You can use it only as a player!");
 			return false;
@@ -205,6 +223,7 @@ public class Main extends JavaPlugin implements Listener {
 		InitFiles();
 		MinigamesStaticData.init();
 		MurderMysterySpawnLocations.init();
+		OutsideData.init();
 	}
 	
 	public void InitFiles() {
@@ -215,6 +234,9 @@ public class Main extends JavaPlugin implements Listener {
 	}
 	
 	public void RegisterAllCommands() {
+		getCommand("acceptparty").setExecutor(new AcceptParty());
+		getCommand("leaveparty").setExecutor(new LeaveParty());		
+		getCommand("startgame").setExecutor(new CreatePartyManager());
 //		getCommand("command").setTabCompleter(new EmptyCompleterNoArgs());
 	}
 }

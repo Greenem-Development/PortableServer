@@ -1,4 +1,4 @@
-name: Server
+name: PortableServer
 main: org.greenem.plugins.Server.main.Main
 version: 3.0.0
 api-version: 1.18
@@ -25,5 +25,11 @@ commands:
       description: Reload the plugin config
       default: true
    startgame:
+      description: Reload the plugin config
+      default: true
+   acceptparty:
+      description: Reload the plugin config
+      default: true
+   leaveparty:
       description: Reload the plugin config
       default: true
