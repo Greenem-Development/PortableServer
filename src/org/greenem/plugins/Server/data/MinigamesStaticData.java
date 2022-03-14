@@ -24,6 +24,7 @@ public class MinigamesStaticData {
 	private static void initMinigameMaps() {
 		ArrayList<String> murderMysteryMaps = new ArrayList<>();
 		murderMysteryMaps.add("map1");
+		murderMysteryMaps.add("map2");
 		minigameMaps.put(Minigame.MURDER_MYSTERY, murderMysteryMaps);
 		// and others
 	}
@@ -37,6 +38,9 @@ public class MinigamesStaticData {
 			}
 			case "map1": {
 				return "Main";
+			}
+			case "map2": {
+				return "Test";
 			}
 			default:
 				throw new IllegalArgumentException("Unexpected value in getFullMapName#map: " + map);

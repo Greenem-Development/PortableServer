@@ -1,5 +1,6 @@
 package org.greenem.plugins.Server.game;
 
+import java.awt.Desktop.Action;
 import java.util.Calendar;
 
 import org.bukkit.Bukkit;
@@ -14,6 +15,7 @@ import org.greenem.plugins.Server.main.Main;
 import org.greenem.plugins.Server.util.SimpleLogger;
 
 import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 
 public class CreatePartyManager implements CommandExecutor {
@@ -49,6 +51,7 @@ public class CreatePartyManager implements CommandExecutor {
 						}
 						
 						clickable.setClickEvent(new ClickEvent( ClickEvent.Action.RUN_COMMAND, acceptCommand));
+//						clickable.setHoverEvent(new HoverEvent()); // to do later, show that player's name
 						message.addExtra(clickable);
 	//					message.addExtra( "!" ); // can add something if needed
 				        player.spigot().sendMessage(message); //does this work on bukkit?
@@ -57,7 +60,7 @@ public class CreatePartyManager implements CommandExecutor {
 			}
 			p.sendMessage(ChatColor.GREEN + "The invitation link was sent to other players");
 			partyManager.updateGui();
-			Bukkit.getPluginManager().registerEvents(partyManager, Main.getPlugin(Main.class));
+			Bukkit.getPluginManager().registerEvents(partyManager, References.plugin);
 			partyManager.openGui(p);
 		}
 		else {

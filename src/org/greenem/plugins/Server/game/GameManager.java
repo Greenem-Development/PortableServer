@@ -9,6 +9,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.greenem.plugins.Server.data.Locs;
 import org.greenem.plugins.Server.data.MinigamesStaticData;
+import org.greenem.plugins.Server.data.NamesAndLines;
 import org.greenem.plugins.Server.data.References;
 import org.greenem.plugins.Server.data.Structure;
 import org.greenem.plugins.Server.data.Worlds;
@@ -27,7 +28,11 @@ public class GameManager {
 	public String worldName = null;
 	public ExtraGameData extraGameData;
 	
+	/**extraGameData has to be already set**/
 	public int start() {
+		if(extraGameData==null) {
+			return 1;
+		}
 		SimpleLogger.log("start");
 		prepareWorld();
 		if(worldName == null) {
@@ -36,26 +41,8 @@ public class GameManager {
 		for (String s : players) {
 			actualPlayers.add(s);
 		}
-		switch (minigameType) {
-		case MURDER_MYSTERY: {
-			startMurderMystery();
-			break;
-		}
-		case AMONG_US: {
-			break;
-		}
-		case SKYWARS: {
-			break;
-		}
-		case BEDWARS: {
-			break;
-		}
-		case TNT_RUN: {
-			break;
-		}
-		default:
-			throw new IllegalArgumentException("Unexpected value in prepareWorld: " + minigameType);
-		}
+		Bukkit.getPluginManager().registerEvents(extraGameData, References.plugin);
+		extraGameData.start();
 		return 0;
 	}
 	
@@ -69,33 +56,11 @@ public class GameManager {
 		}
 		Bukkit.unloadWorld(worldName, true); // later false
 		Worlds.usedWorlds.remove(worldName);
+		References.updateAllMapListsInGui(minigameType);
 	}
 	
 	public void prepareWorld() {
-		switch (minigameType) {
-		case MURDER_MYSTERY: {
-			worldName = searchForAvaliableWorld("murder_mystery");
-			break;
-		}
-		case AMONG_US: {
-			worldName = searchForAvaliableWorld("among_us_");
-			break;
-		}
-		case SKYWARS: {
-			worldName = searchForAvaliableWorld("skywars_");
-			break;
-		}
-		case BEDWARS: {
-			worldName = searchForAvaliableWorld("bedwars_");
-			break;
-		}
-		case TNT_RUN: {
-			worldName = searchForAvaliableWorld("tnt_run_");
-			break;
-		}
-		default:
-			throw new IllegalArgumentException("Unexpected value in prepareWorld: " + minigameType);
-		}
+		worldName = searchForAvaliableWorld(NamesAndLines.getMinigameNameInFolder(minigameType));
 	}
 	
 	private String searchForAvaliableWorld(String minigameName) {
@@ -132,19 +97,5 @@ public class GameManager {
 					+ "example for murder mystery, map 1, instance 1: murder_mystery_map1_1"); 
 		}
 		return null;
-	}
-	
-	private void startMurderMystery(){
-		SimpleLogger.log("startMurderMystery");
-		ArrayList<Location> allLocs = MurderMysterySpawnLocations.locs.get(map);
-		for (String pName : actualPlayers) {
-			int spawnLocNum = rand.nextInt(allLocs.size());
-			float rotation = rand.nextFloat(-180, 180);
-			SimpleLogger.log(map);
-			Location loc = allLocs.get(spawnLocNum).clone().add(0.5, 0, 0.5);
-			loc.setYaw(rotation);
-			loc.setWorld(Bukkit.getWorld(worldName));
-			Bukkit.getPlayerExact(pName).teleport(loc);
-		}
 	}
 }

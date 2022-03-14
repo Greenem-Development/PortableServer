@@ -28,6 +28,7 @@ import org.greenem.plugins.Server.events.MainEvents;
 import org.greenem.plugins.Server.game.GameManager;
 import org.greenem.plugins.Server.game.GameSelectScreen;
 import org.greenem.plugins.Server.game.CreatePartyManager;
+import org.greenem.plugins.Server.game.ExtraGameData;
 import org.greenem.plugins.Server.game.Minigame;
 import org.greenem.plugins.Server.minigames.murderMystery.MurderMysterySpawnLocations;
 import org.greenem.plugins.Server.miscellaneous.Stash;

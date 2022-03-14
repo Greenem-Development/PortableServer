@@ -6,6 +6,6 @@ public enum Minigame {
 	MURDER_MYSTERY,
 	AMONG_US,
 	TNT_RUN,
-	FEATHER_FALLING,
+//	FEATHER_FALLING,
 	TAG
 }

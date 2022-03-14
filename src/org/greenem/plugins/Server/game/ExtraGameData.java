@@ -1,5 +1,12 @@
 package org.greenem.plugins.Server.game;
 
-public interface ExtraGameData {
+import org.bukkit.event.Listener;
+
+public interface ExtraGameData extends Listener {
+	public GameManager gm = null;
+
+	public GameManager getGm();
+	public void setGm(GameManager gm);
 	
+	public void start();
 }

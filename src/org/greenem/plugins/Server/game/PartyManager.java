@@ -13,7 +13,12 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.greenem.plugins.Server.data.MinigamesStaticData;
 import org.greenem.plugins.Server.data.NamesAndLines;
+import org.greenem.plugins.Server.data.References;
+import org.greenem.plugins.Server.data.Structure;
+import org.greenem.plugins.Server.data.Worlds;
+import org.greenem.plugins.Server.main.Main;
 import org.greenem.plugins.Server.miscellaneous.Stash;
+import org.greenem.plugins.Server.miscellaneous.WorldLoadHelper;
 import org.greenem.plugins.Server.util.SimpleLogger;
 
 public class PartyManager implements Listener {
@@ -24,6 +29,7 @@ public class PartyManager implements Listener {
 	public Minigame selectedMinigame = null;
 	public boolean inGame = false;
 	public ArrayList<Integer> settingsNumbers = new ArrayList<>();
+	public ArrayList<Integer> settingsMaxNumbers = new ArrayList<>();
 	
 	public PartyManager (String leader) {
 		this.leader = leader;
@@ -58,12 +64,12 @@ public class PartyManager implements Listener {
 		if(selectedMinigame!=null) {
 			switch (selectedMinigame) {
 			case MURDER_MYSTERY: {
-				setItemOnBoth(0, Stash.createGuiItem(Material.NETHERITE_HOE, ChatColor.WHITE + "Mode", getHighlightedList(new String[] {"Murder Mystery"}, ChatColor.WHITE, ChatColor.GOLD, 1)));
-				setItemOnBoth(2, Stash.createGuiItem(Material.MAP, ChatColor.WHITE + "Map", getHighlightedList(getMapList(selectedMinigame), ChatColor.WHITE, ChatColor.GOLD, 1)));
-				setItemOnBoth(4, Stash.createGuiItem(Material.IRON_SWORD, ChatColor.WHITE + "Murderers", getHighlightedList(new String[] {"1", "2", "3"}, ChatColor.WHITE, ChatColor.GOLD, 1)));
+				setItemOnBoth(0, Stash.createGuiItem(Material.NETHERITE_HOE, ChatColor.WHITE + "Mode", getHighlightedList(new String[] {"Murder Mystery"}, ChatColor.WHITE, ChatColor.GOLD, 0)));
+				updateGuiMapList();
+				setItemOnBoth(4, Stash.createGuiItem(Material.IRON_SWORD, ChatColor.WHITE + "Murderers", getHighlightedList(new String[] {"1", "2", "3"}, ChatColor.WHITE, ChatColor.GOLD, 2)));
 				// check if the total amount is not more that players (when ok click)
-				setItemOnBoth(6, Stash.createGuiItem(Material.BOW, ChatColor.WHITE + "Detectives", getHighlightedList(new String[] {"1", "2", "3"}, ChatColor.WHITE, ChatColor.GOLD, 1)));
-				setItemOnBoth(8, Stash.createGuiItem(Material.CLOCK, ChatColor.WHITE + "Max time", getHighlightedList(new String[] {"5 Minutes", "10 Minutes", "2 Minutes"}, ChatColor.WHITE, ChatColor.GOLD, 1)));
+				setItemOnBoth(6, Stash.createGuiItem(Material.BOW, ChatColor.WHITE + "Detectives", getHighlightedList(new String[] {"1", "2", "3"}, ChatColor.WHITE, ChatColor.GOLD, 3)));
+				setItemOnBoth(8, Stash.createGuiItem(Material.CLOCK, ChatColor.WHITE + "Max time", getHighlightedList(new String[] {"5 Minutes", "10 Minutes", "2 Minutes"}, ChatColor.WHITE, ChatColor.GOLD, 4)));
 				break;
 			}
 			default:
@@ -76,12 +82,39 @@ public class PartyManager implements Listener {
 		gameStartScreenNormal.setItem(Stash.getSlotNumber(3, 5), Stash.createGuiItem(Material.RED_CONCRETE, ChatColor.WHITE + NamesAndLines.closeGuiText));
 	}
 	
+	public void updateGuiMapList() {
+		int slot = getMapListSlotInGui(selectedMinigame);
+		int arrayPos = getMapListPosInArray(selectedMinigame);
+		
+		setItemOnBoth(slot, Stash.createGuiItem(Material.MAP, ChatColor.WHITE + "Map", getHighlightedList(getMapList(selectedMinigame), ChatColor.WHITE, ChatColor.GOLD, arrayPos)));
+	}
+	
 	private String[] getMapList(Minigame minigame) {
 		ArrayList<String> maps = MinigamesStaticData.minigameMaps.get(minigame);
 		Object[] array = maps.toArray();
 		String[] array2 = new String[array.length];
 		for (int i = 0; i < array.length; i++) {
-			array2[i] = MinigamesStaticData.getFullMapName(minigame, (String) array[i]);
+			String systemMap = (String) array[i];
+			String map = MinigamesStaticData.getFullMapName(minigame, systemMap);
+			int avaliable = getWorldsAvaliable(systemMap);
+			String worldsOrNotS = "world";
+			if(avaliable!=1) {
+				worldsOrNotS += "s";
+			}
+			String strAval = String.valueOf(avaliable);
+			if(avaliable==0) {
+				strAval = "no";
+			}
+			ChatColor color = ChatColor.GRAY;
+			String exclamationMark = "";
+			int pos = getMapListPosInArray(selectedMinigame);
+			System.out.println(settingsNumbers.toString());
+			System.out.println(pos);
+			if(strAval.equals("no") && ((settingsNumbers.size()-1==pos) || (settingsNumbers.size()>pos && settingsNumbers.get(pos)==i))) { // weird ( && i!=0)
+				color = ChatColor.RED;
+				exclamationMark = "!";
+			}
+			array2[i] = map + color + " (" + strAval + " " + worldsOrNotS + " avaliable" + exclamationMark + ")";
 		}
 		return array2;
 	}
@@ -107,37 +140,19 @@ public class PartyManager implements Listener {
 				strs[i] = normalColor + strs[i];
 			}
 		}
+		
+		makeNewIndexes(settingsMaxNumbers, num);
+		
+		settingsMaxNumbers.set(num, strs.length);
 		return strs; // its actually a link, already modified, remember that
 	}
 	
-	@Deprecated
-	private void initSettingsNumbers() { 
-		switch (selectedMinigame) {
-		case MURDER_MYSTERY: {
-			settingsNumbers.set(0, 1);
-			settingsNumbers.set(1, MinigamesStaticData.minigameMaps.get(selectedMinigame).size());
-			settingsNumbers.set(0, 1);
-			settingsNumbers.set(0, 1);
-			settingsNumbers.set(0, 1);
-			break;
+	private void makeNewIndexes(ArrayList<Integer> arrayList, int num) {
+		if(arrayList.size()<=num) {
+			for (int i = arrayList.size(); i <= num; i++) {
+				arrayList.add(null);
+			}
 		}
-		default:
-			//throw new IllegalArgumentException("Unexpected value: " + );
-		}
-	}
-	
-	@Deprecated
-	public void initZeros() {
-		settingsNumbers.add(0);
-		settingsNumbers.add(0);
-		settingsNumbers.add(0);
-		settingsNumbers.add(0);
-		settingsNumbers.add(0);
-		settingsNumbers.add(0);
-		settingsNumbers.add(0);
-		settingsNumbers.add(0);
-		settingsNumbers.add(0);
-		settingsNumbers.add(0);
 	}
 	
 	private void setItemOnBoth(int slot, ItemStack is) {
@@ -152,6 +167,7 @@ public class PartyManager implements Listener {
 			e.setCancelled(true);
 			ItemStack item = e.getCurrentItem();
 			int slot = e.getSlot();
+			Player p = (Player) e.getWhoClicked();
 			if(item!=null) {
 				if(players.contains(name)) {
 					if(leader.equals(name)) {
@@ -166,19 +182,37 @@ public class PartyManager implements Listener {
 								}
 							}
 						}
-						if(slot==2) { // maps currently
-
-						}
-						else {
+						if(item.getType()==Material.GREEN_CONCRETE) {
 							switch (selectedMinigame) {
 							case MURDER_MYSTERY: {
-								if(slot==4 || slot==6 || slot==8) {
-									
-								}
+								ExtraMurderMysteryData data = new ExtraMurderMysteryData();
+								data.amountOfMurderers = settingsNumbers.get(2); // bad way actually
+								data.amountOfDetectives = settingsNumbers.get(3);
+								data.ga
+								GameCreation.startNewGame(p, selectedMinigame, data);
 								break;
 							}
 							default:
 								throw new IllegalArgumentException("Unexpected value: " + selectedMinigame);
+							}
+						}
+						else {
+							if(selectedMinigame!=null) {
+								switch (selectedMinigame) {
+								case MURDER_MYSTERY: {
+									if(slot==2 || slot==4 || slot==6 || slot==8) {
+										int newSlot = slot/2;
+										makeNewIndexes(settingsNumbers, newSlot);
+										makeNewIndexes(settingsMaxNumbers, newSlot);
+										SimpleLogger.log(settingsNumbers.toString());
+										settingsNumbers.set(newSlot, (settingsNumbers.get(newSlot)+1) % settingsMaxNumbers.get(newSlot));
+										updateGui();
+									}
+									break;
+								}
+								default:
+									throw new IllegalArgumentException("Unexpected value: " + selectedMinigame);
+								}
 							}
 						}
 					}
@@ -189,6 +223,51 @@ public class PartyManager implements Listener {
 					}
 				}
 			}
+		}
+	}
+	
+	private int getWorldsAvaliable(String map) {
+		boolean foundWorldsEnd = false; // does not work if like world1 doesn't exist, think about it later (dublicated comment)
+		int avaliableAmount = 0;
+		int number = 1;
+		while (!foundWorldsEnd) {
+//			SimpleLogger.log("while"); //uncomment if loop
+			String worldName = NamesAndLines.getMinigameNameInFolder(selectedMinigame) + "_" + map + "_" + number;
+			if(WorldLoadHelper.worldExists(worldName)) {
+				if(!Worlds.usedWorlds.contains(worldName)) {
+					avaliableAmount++;
+				} else {
+					if(foundWorldsEnd) {
+						break;
+					}
+				}
+			} else {
+				// does this work?
+				foundWorldsEnd = true;
+				break;
+			}
+			number++;
+		}
+		return avaliableAmount;
+	}
+	
+	public int getMapListSlotInGui(Minigame minigame) { // the grid
+		switch (minigame) {
+		case MURDER_MYSTERY: {
+			return 2;
+		}
+		default:
+			throw new IllegalArgumentException("Unexpected value: " + selectedMinigame);
+		}
+	}
+	
+	public int getMapListPosInArray(Minigame minigame) { // array
+		switch (minigame) {
+		case MURDER_MYSTERY: {
+			return 1;
+		}
+		default:
+			throw new IllegalArgumentException("Unexpected value: " + selectedMinigame);
 		}
 	}
 }

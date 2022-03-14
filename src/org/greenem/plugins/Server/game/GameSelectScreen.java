@@ -58,6 +58,7 @@ public class GameSelectScreen implements Listener {
 						}
 						else if(pm.leader.equals(p.getName())) {
 							pm.selectedMinigame = Minigame.MURDER_MYSTERY;
+							pm.settingsNumbers.clear();
 							pm.updateGui();
 							p.openInventory(pm.gameStartScreenLeader);
 							for (String s : pm.players) {

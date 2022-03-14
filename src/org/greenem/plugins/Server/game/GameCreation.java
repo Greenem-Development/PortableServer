@@ -11,6 +11,7 @@ import org.greenem.plugins.Server.util.SimpleLogger;
 public class GameCreation {
 	public static void startNewGame(Player p, Minigame minigame, ExtraGameData data) {
 		GameManager gameManager = new GameManager();
+		data.setGm(gameManager);
 		gameManager.minigameType = minigame;
 		gameManager.extraGameData = data;
 //		gameManager.players.add(sender.getName());
