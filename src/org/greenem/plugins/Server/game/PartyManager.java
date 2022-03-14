@@ -17,6 +17,8 @@ import org.greenem.plugins.Server.data.References;
 import org.greenem.plugins.Server.data.Structure;
 import org.greenem.plugins.Server.data.Worlds;
 import org.greenem.plugins.Server.main.Main;
+import org.greenem.plugins.Server.minigames.murderMystery.MurderMysterySettingsItem;
+import org.greenem.plugins.Server.minigames.murderMystery.MurderMysterySetupSettings;
 import org.greenem.plugins.Server.miscellaneous.Stash;
 import org.greenem.plugins.Server.miscellaneous.WorldLoadHelper;
 import org.greenem.plugins.Server.util.SimpleLogger;
@@ -64,12 +66,12 @@ public class PartyManager implements Listener {
 		if(selectedMinigame!=null) {
 			switch (selectedMinigame) {
 			case MURDER_MYSTERY: {
-				setItemOnBoth(0, Stash.createGuiItem(Material.NETHERITE_HOE, ChatColor.WHITE + "Mode", getHighlightedList(new String[] {"Murder Mystery"}, ChatColor.WHITE, ChatColor.GOLD, 0)));
+				setItemOnBoth(0, Stash.createGuiItem(Material.NETHERITE_HOE, ChatColor.WHITE + "Mode", getHighlightedList(MurderMysterySetupSettings.getOptionsList(MurderMysterySettingsItem.MODE), ChatColor.WHITE, ChatColor.GOLD, 0)));
 				updateGuiMapList();
-				setItemOnBoth(4, Stash.createGuiItem(Material.IRON_SWORD, ChatColor.WHITE + "Murderers", getHighlightedList(new String[] {"1", "2", "3"}, ChatColor.WHITE, ChatColor.GOLD, 2)));
+				setItemOnBoth(4, Stash.createGuiItem(Material.IRON_SWORD, ChatColor.WHITE + "Murderers", getHighlightedList(MurderMysterySetupSettings.getOptionsList(MurderMysterySettingsItem.MURDERERS), ChatColor.WHITE, ChatColor.GOLD, 2)));
 				// check if the total amount is not more that players (when ok click)
-				setItemOnBoth(6, Stash.createGuiItem(Material.BOW, ChatColor.WHITE + "Detectives", getHighlightedList(new String[] {"1", "2", "3"}, ChatColor.WHITE, ChatColor.GOLD, 3)));
-				setItemOnBoth(8, Stash.createGuiItem(Material.CLOCK, ChatColor.WHITE + "Max time", getHighlightedList(new String[] {"5 Minutes", "10 Minutes", "2 Minutes"}, ChatColor.WHITE, ChatColor.GOLD, 4)));
+				setItemOnBoth(6, Stash.createGuiItem(Material.BOW, ChatColor.WHITE + "Detectives", getHighlightedList(MurderMysterySetupSettings.getOptionsList(MurderMysterySettingsItem.DETECTIVES), ChatColor.WHITE, ChatColor.GOLD, 3)));
+				setItemOnBoth(8, Stash.createGuiItem(Material.CLOCK, ChatColor.WHITE + "Max time", getHighlightedList(MurderMysterySetupSettings.getOptionsList(MurderMysterySettingsItem.MAX_TIME), ChatColor.WHITE, ChatColor.GOLD, 4)));
 				break;
 			}
 			default:
@@ -77,8 +79,8 @@ public class PartyManager implements Listener {
 			}	
 		}
 		
-		gameStartScreenLeader.setItem(Stash.getSlotNumber(3, 4), Stash.createGuiItem(Material.RED_CONCRETE, ChatColor.WHITE + "Back"));
-		gameStartScreenLeader.setItem(Stash.getSlotNumber(3, 6), Stash.createGuiItem(Material.GREEN_CONCRETE, ChatColor.WHITE + "Start"));
+		gameStartScreenLeader.setItem(Stash.getSlotNumber(3, 4), Stash.createGuiItem(Material.GREEN_CONCRETE, ChatColor.WHITE + "Start"));
+		gameStartScreenLeader.setItem(Stash.getSlotNumber(3, 6), Stash.createGuiItem(Material.RED_CONCRETE, ChatColor.WHITE + "Back"));
 		gameStartScreenNormal.setItem(Stash.getSlotNumber(3, 5), Stash.createGuiItem(Material.RED_CONCRETE, ChatColor.WHITE + NamesAndLines.closeGuiText));
 	}
 	
@@ -186,10 +188,10 @@ public class PartyManager implements Listener {
 							switch (selectedMinigame) {
 							case MURDER_MYSTERY: {
 								ExtraMurderMysteryData data = new ExtraMurderMysteryData();
-								data.amountOfMurderers = settingsNumbers.get(2); // bad way actually
-								data.amountOfDetectives = settingsNumbers.get(3);
-								data.ga
-								GameCreation.startNewGame(p, selectedMinigame, data);
+								data.amountOfMurderers = settingsNumbers.get(MurderMysterySetupSettings.getArrayPosition(MurderMysterySettingsItem.MURDERERS));
+								data.amountOfDetectives = settingsNumbers.get(MurderMysterySetupSettings.getArrayPosition(MurderMysterySettingsItem.DETECTIVES));
+								data.fullTime = settingsNumbers.get(MurderMysterySetupSettings.getArrayPosition(MurderMysterySettingsItem.MAX_TIME));
+								GameCreation.startNewGame(p, selectedMinigame, getCurrentSelectedMapSystemName(selectedMinigame), data);
 								break;
 							}
 							default:
@@ -224,6 +226,11 @@ public class PartyManager implements Listener {
 				}
 			}
 		}
+	}
+	
+	public String getCurrentSelectedMapSystemName(Minigame minigame) {
+		ArrayList<String> maps = MinigamesStaticData.minigameMaps.get(minigame);
+		return maps.get(settingsNumbers.get(getMapListPosInArray(minigame)));
 	}
 	
 	private int getWorldsAvaliable(String map) {

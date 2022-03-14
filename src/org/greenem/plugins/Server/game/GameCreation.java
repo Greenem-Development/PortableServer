@@ -9,11 +9,12 @@ import org.greenem.plugins.Server.data.Structure;
 import org.greenem.plugins.Server.util.SimpleLogger;
 
 public class GameCreation {
-	public static void startNewGame(Player p, Minigame minigame, ExtraGameData data) {
+	public static void startNewGame(Player p, Minigame minigame, String map, ExtraGameData data) {
 		GameManager gameManager = new GameManager();
 		data.setGm(gameManager);
 		gameManager.minigameType = minigame;
 		gameManager.extraGameData = data;
+		gameManager.map = map;
 //		gameManager.players.add(sender.getName());
 		int minPlayers = MinigamesStaticData.minimumPlayersForGame.get(minigame);
 		if(minPlayers>1) {

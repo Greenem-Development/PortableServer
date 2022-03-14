@@ -1,7 +1,7 @@
 package org.greenem.plugins.Server.minigames.murderMystery;
 
 public class MurderMysterySetupSettings {
-	public int getArrayPosition(MurderMysterySettingsItem settings) {
+	public static int getArrayPosition(MurderMysterySettingsItem settings) {
 		switch (settings) {
 		case MODE:
 			return 0;
@@ -18,7 +18,7 @@ public class MurderMysterySetupSettings {
 		}
 	}
 	
-	public int getMaxTimeInt(String sentence) {
+	public static int getMaxTimeInt(String sentence) {
 		switch (sentence) {
 		case "5 Minutes":
 			return 300;
@@ -31,7 +31,18 @@ public class MurderMysterySetupSettings {
 		}
 	}
 	
-	public String[] getOptionsList(MurderMysterySettingsItem settings) {
-		
+	public static String[] getOptionsList(MurderMysterySettingsItem settings) {
+		switch (settings) {
+		case MODE:
+			return new String[] {"Murder Mystery"};
+		case MURDERERS:
+			return new String[] {"1", "2", "3"};
+		case DETECTIVES:
+			return new String[] {"1", "2", "3"};
+		case MAX_TIME:
+			return new String[] {"5 Minutes", "10 Minutes", "2 Minutes"};
+		default:
+			throw new IllegalArgumentException("Unexpected value: " + settings);
+		}
 	}
 }
