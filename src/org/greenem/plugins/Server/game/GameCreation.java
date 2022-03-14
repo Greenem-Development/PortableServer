@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.greenem.plugins.Server.data.MinigamesStaticData;
+import org.greenem.plugins.Server.data.NamesAndLines;
 import org.greenem.plugins.Server.data.References;
 import org.greenem.plugins.Server.data.Structure;
 import org.greenem.plugins.Server.util.SimpleLogger;
@@ -18,27 +19,28 @@ public class GameCreation {
 //		gameManager.players.add(sender.getName());
 		int minPlayers = MinigamesStaticData.minimumPlayersForGame.get(minigame);
 		if(minPlayers>1) {
-			PartyManager pm = References.playersParty.get(p.getName());
-			if(pm==null) {
-				p.sendMessage("You can't start this minigame with no party!");
+			TeamManager tm = References.playersTeam.get(p.getName());
+			if(tm==null) {
+				p.sendMessage("You can't start this minigame with no team!");
 				return;
 			}
-			if(pm.players.size()<2) {
+			if(tm.players.size()<2) {
 				p.sendMessage("You can't start this minigame alone!");
 				return;
 			}
-			for (String serverPlayer : pm.players) { // for test
+			for (String serverPlayer : tm.players) { // for test
 				gameManager.players.add(serverPlayer);
 			}
+			gameManager.tm = tm;
 		}
 		int success = gameManager.start();
 		if(success==0) {
 			Structure.gameManagers.add(gameManager);
 			References.playersInGame.add(p.getName());
-			References.playersParty.get(p.getName()).inGame = true;
+			References.playersTeam.get(p.getName()).inGame = true;
 		}
 		else if(success==-1) {
-			p.sendMessage(ChatColor.RED + "There is currently no world avaliable to start the game");
+			p.sendMessage(NamesAndLines.noMapsAvaliable);
 		}
 		else if(success==1) {
 			p.sendMessage(ChatColor.RED + "An error occured while starting the game");

@@ -18,21 +18,21 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 
-public class CreatePartyManager implements CommandExecutor {
+public class CreateTeamManager implements CommandExecutor {
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		if(Main.isSenderAPlayer(sender)) {
-			createParty((Player) sender);
+			createTeam((Player) sender);
 		}
 		return false;
 	}
 	
-	public static void createParty(Player p) {
-		if(References.playersParty.get(p.getName())==null) {
+	public static void createTeam(Player p) {
+		if(References.playersTeam.get(p.getName())==null) {
 			
-			PartyManager partyManager = new PartyManager(p.getName());
-			int id = References.addInvitationIdToParty(partyManager);
-			References.playersParty.put(p.getName(), partyManager);
+			TeamManager teamManager = new TeamManager(p.getName());
+			int id = References.addInvitationIdToTeam(teamManager);
+			References.playersTeam.put(p.getName(), teamManager);
 			
 			for (Player player : Bukkit.getOnlinePlayers()) {
 				if(!References.playersInGame.contains(player.getName())) {
@@ -40,7 +40,7 @@ public class CreatePartyManager implements CommandExecutor {
 						TextComponent message = new TextComponent(ChatColor.WHITE + "" + ChatColor.BOLD + p.getName() + ChatColor.RESET + "" + ChatColor.WHITE + " is staring a game, ");
 						TextComponent clickable = new TextComponent(ChatColor.UNDERLINE + "" + ChatColor.BOLD + "Click here to join!");
 						
-						String acceptCommand = "/acceptparty " + id;
+						String acceptCommand = "/acceptteam " + id;
 						
 						if(!ConfigData.allowInvitesBeforeReload) {
 							acceptCommand += " " + Calendar.getInstance().getTimeInMillis();
@@ -59,12 +59,12 @@ public class CreatePartyManager implements CommandExecutor {
 				}
 			}
 			p.sendMessage(ChatColor.GREEN + "The invitation link was sent to other players");
-			partyManager.updateGui();
-			Bukkit.getPluginManager().registerEvents(partyManager, References.plugin);
-			partyManager.openGui(p);
+			teamManager.updateGui();
+			Bukkit.getPluginManager().registerEvents(teamManager, References.plugin);
+			teamManager.openGui(p);
 		}
 		else {
-			p.sendMessage(ChatColor.RED + "You already have a party!");
+			p.sendMessage(ChatColor.RED + "You already have a team!");
 		}
 	}
 }

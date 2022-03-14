@@ -45,32 +45,32 @@ public class GameSelectScreen implements Listener {
 				if(item!=null) {
 					if(item.getType().equals(Material.NETHERITE_HOE)) {
 						requiresLeader = true;
-						PartyManager pm = References.playersParty.get(p.getName());
-						if(pm==null) {
-//							p.chat("/createparty");
-							CreatePartyManager.createParty(p);
-							// add to party if not already
-							// set current game in menu for party class
-							pm = References.playersParty.get(p.getName());
-							pm.selectedMinigame = Minigame.MURDER_MYSTERY;
-							pm.updateGui();
-							p.openInventory(pm.gameStartScreenLeader);
+						TeamManager tm = References.playersTeam.get(p.getName());
+						if(tm==null) {
+//							p.chat("/createteam");
+							CreateTeamManager.createTeam(p);
+							// add to team if not already
+							// set current game in menu for team class
+							tm = References.playersTeam.get(p.getName());
+							tm.selectedMinigame = Minigame.MURDER_MYSTERY;
+							tm.updateGui();
+							p.openInventory(tm.gameStartScreenLeader);
 						}
-						else if(pm.leader.equals(p.getName())) {
-							pm.selectedMinigame = Minigame.MURDER_MYSTERY;
-							pm.settingsNumbers.clear();
-							pm.updateGui();
-							p.openInventory(pm.gameStartScreenLeader);
-							for (String s : pm.players) {
+						else if(tm.leader.equals(p.getName())) {
+							tm.selectedMinigame = Minigame.MURDER_MYSTERY;
+							tm.settingsNumbers.clear();
+							tm.updateGui();
+							p.openInventory(tm.gameStartScreenLeader);
+							for (String s : tm.players) {
 								if(!s.equals(p.getName()) && Bukkit.getPlayerExact(s).getOpenInventory().getTopInventory().equals(GameSelectScreen.menu)) {
 //									Bukkit.getPlayerExact(s).closeInventory();
-									Bukkit.getPlayerExact(s).openInventory(pm.gameStartScreenNormal);
+									Bukkit.getPlayerExact(s).openInventory(tm.gameStartScreenNormal);
 								}
 							}
 						}
-						else { // party, but not leader
+						else { // team, but not leader
 							isntLeader = true;
-//							SimpleLogger.log(p.getName() + " got a way to open minigame selection screen in party with no leader on him");
+//							SimpleLogger.log(p.getName() + " got a way to open minigame selection screen in team with no leader on him");
 						}
 					}
 					else if(item.getType().equals(Material.RED_CONCRETE)) {
@@ -78,7 +78,7 @@ public class GameSelectScreen implements Listener {
 					}
 					
 					if(requiresLeader && isntLeader) {
-						p.sendMessage(ChatColor.RED + "Only party owner can select the minigame!");
+						p.sendMessage(ChatColor.RED + "Only team owner can select the minigame!");
 					}
 				}
 			}

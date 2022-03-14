@@ -24,12 +24,12 @@ commands:
    coordstest2:
       description: No description
       default: true
-   createparty:
+   createteam:
       description: No description
       default: true
-   acceptparty:
+   acceptteam:
       description: No description
       default: true
-   leaveparty:
+   leaveteam:
       description: No description
       default: true

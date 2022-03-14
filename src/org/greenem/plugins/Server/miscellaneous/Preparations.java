@@ -4,7 +4,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.greenem.plugins.Server.data.NamesAndLines;
-import org.greenem.plugins.Server.game.PartyManager;
+import org.greenem.plugins.Server.game.TeamManager;
 
 public class Preparations {
 	public static void preparePlayerInHub(Player p) {

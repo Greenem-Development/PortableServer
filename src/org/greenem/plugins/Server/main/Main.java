@@ -17,8 +17,8 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.greenem.plugins.Server.commands.AcceptParty;
-import org.greenem.plugins.Server.commands.LeaveParty;
+import org.greenem.plugins.Server.commands.AcceptTeam;
+import org.greenem.plugins.Server.commands.LeaveTeam;
 import org.greenem.plugins.Server.data.ConfigData;
 import org.greenem.plugins.Server.data.MinigamesStaticData;
 import org.greenem.plugins.Server.data.OutsideData;
@@ -27,7 +27,7 @@ import org.greenem.plugins.Server.data.Structure;
 import org.greenem.plugins.Server.events.MainEvents;
 import org.greenem.plugins.Server.game.GameManager;
 import org.greenem.plugins.Server.game.GameSelectScreen;
-import org.greenem.plugins.Server.game.CreatePartyManager;
+import org.greenem.plugins.Server.game.CreateTeamManager;
 import org.greenem.plugins.Server.game.ExtraGameData;
 import org.greenem.plugins.Server.game.Minigame;
 import org.greenem.plugins.Server.minigames.murderMystery.MurderMysterySpawnLocations;
@@ -238,9 +238,9 @@ public class Main extends JavaPlugin implements Listener {
 	}
 	
 	public void RegisterAllCommands() {
-		getCommand("acceptparty").setExecutor(new AcceptParty());
-		getCommand("leaveparty").setExecutor(new LeaveParty());		
-		getCommand("createparty").setExecutor(new CreatePartyManager());
+		getCommand("acceptteam").setExecutor(new AcceptTeam());
+		getCommand("leaveteam").setExecutor(new LeaveTeam());		
+		getCommand("createteam").setExecutor(new CreateTeamManager());
 //		getCommand("command").setTabCompleter(new EmptyCompleterNoArgs());
 	}
 	

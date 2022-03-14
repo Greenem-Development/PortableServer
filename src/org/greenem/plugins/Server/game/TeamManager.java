@@ -23,7 +23,7 @@ import org.greenem.plugins.Server.miscellaneous.Stash;
 import org.greenem.plugins.Server.miscellaneous.WorldLoadHelper;
 import org.greenem.plugins.Server.util.SimpleLogger;
 
-public class PartyManager implements Listener {
+public class TeamManager implements Listener {
 	public ArrayList<String> players = new ArrayList<>();
 	public String leader = null;
 	public Inventory gameStartScreenLeader = null;
@@ -33,7 +33,7 @@ public class PartyManager implements Listener {
 	public ArrayList<Integer> settingsNumbers = new ArrayList<>();
 	public ArrayList<Integer> settingsMaxNumbers = new ArrayList<>();
 	
-	public PartyManager (String leader) {
+	public TeamManager (String leader) {
 		this.leader = leader;
 		players.add(leader);
 		checkExisting();
@@ -66,12 +66,16 @@ public class PartyManager implements Listener {
 		if(selectedMinigame!=null) {
 			switch (selectedMinigame) {
 			case MURDER_MYSTERY: {
-				setItemOnBoth(0, Stash.createGuiItem(Material.NETHERITE_HOE, ChatColor.WHITE + "Mode", getHighlightedList(MurderMysterySetupSettings.getOptionsList(MurderMysterySettingsItem.MODE), ChatColor.WHITE, ChatColor.GOLD, 0)));
+				setItemOnBoth(0, Stash.createGuiItem(Material.NETHERITE_HOE, ChatColor.WHITE + "Mode", getHighlightedList(MurderMysterySetupSettings.getOptionsList(
+						MurderMysterySettingsItem.MODE), ChatColor.WHITE, ChatColor.GOLD, MurderMysterySetupSettings.getArrayPosition(MurderMysterySettingsItem.MODE))));
 				updateGuiMapList();
-				setItemOnBoth(4, Stash.createGuiItem(Material.IRON_SWORD, ChatColor.WHITE + "Murderers", getHighlightedList(MurderMysterySetupSettings.getOptionsList(MurderMysterySettingsItem.MURDERERS), ChatColor.WHITE, ChatColor.GOLD, 2)));
+				setItemOnBoth(4, Stash.createGuiItem(Material.IRON_SWORD, ChatColor.WHITE + "Murderers", getHighlightedList(MurderMysterySetupSettings.getOptionsList(
+						MurderMysterySettingsItem.MURDERERS), ChatColor.WHITE, ChatColor.GOLD, MurderMysterySetupSettings.getArrayPosition(MurderMysterySettingsItem.MURDERERS))));
 				// check if the total amount is not more that players (when ok click)
-				setItemOnBoth(6, Stash.createGuiItem(Material.BOW, ChatColor.WHITE + "Detectives", getHighlightedList(MurderMysterySetupSettings.getOptionsList(MurderMysterySettingsItem.DETECTIVES), ChatColor.WHITE, ChatColor.GOLD, 3)));
-				setItemOnBoth(8, Stash.createGuiItem(Material.CLOCK, ChatColor.WHITE + "Max time", getHighlightedList(MurderMysterySetupSettings.getOptionsList(MurderMysterySettingsItem.MAX_TIME), ChatColor.WHITE, ChatColor.GOLD, 4)));
+				setItemOnBoth(6, Stash.createGuiItem(Material.BOW, ChatColor.WHITE + "Detectives", getHighlightedList(MurderMysterySetupSettings.getOptionsList(
+						MurderMysterySettingsItem.DETECTIVES), ChatColor.WHITE, ChatColor.GOLD, MurderMysterySetupSettings.getArrayPosition(MurderMysterySettingsItem.DETECTIVES))));
+				setItemOnBoth(8, Stash.createGuiItem(Material.CLOCK, ChatColor.WHITE + "Max time", getHighlightedList(MurderMysterySetupSettings.getOptionsList(
+						MurderMysterySettingsItem.MAX_TIME), ChatColor.WHITE, ChatColor.GOLD, MurderMysterySetupSettings.getArrayPosition(MurderMysterySettingsItem.MAX_TIME))));
 				break;
 			}
 			default:
@@ -185,17 +189,23 @@ public class PartyManager implements Listener {
 							}
 						}
 						if(item.getType()==Material.GREEN_CONCRETE) {
-							switch (selectedMinigame) {
-							case MURDER_MYSTERY: {
-								ExtraMurderMysteryData data = new ExtraMurderMysteryData();
-								data.amountOfMurderers = settingsNumbers.get(MurderMysterySetupSettings.getArrayPosition(MurderMysterySettingsItem.MURDERERS));
-								data.amountOfDetectives = settingsNumbers.get(MurderMysterySetupSettings.getArrayPosition(MurderMysterySettingsItem.DETECTIVES));
-								data.fullTime = settingsNumbers.get(MurderMysterySetupSettings.getArrayPosition(MurderMysterySettingsItem.MAX_TIME));
-								GameCreation.startNewGame(p, selectedMinigame, getCurrentSelectedMapSystemName(selectedMinigame), data);
-								break;
+							String map = getCurrentSelectedMapSystemName(selectedMinigame);
+							if(getWorldsAvaliable(map)==0) {
+								p.sendMessage(NamesAndLines.noMapsAvaliable);
 							}
-							default:
-								throw new IllegalArgumentException("Unexpected value: " + selectedMinigame);
+							else {
+								switch (selectedMinigame) {
+								case MURDER_MYSTERY: {
+									ExtraMurderMysteryData data = new ExtraMurderMysteryData();
+									data.amountOfMurderers = settingsNumbers.get(MurderMysterySetupSettings.getArrayPosition(MurderMysterySettingsItem.MURDERERS));
+									data.amountOfDetectives = settingsNumbers.get(MurderMysterySetupSettings.getArrayPosition(MurderMysterySettingsItem.DETECTIVES));
+									data.fullTime = settingsNumbers.get(MurderMysterySetupSettings.getArrayPosition(MurderMysterySettingsItem.MAX_TIME));
+									GameCreation.startNewGame(p, selectedMinigame, map, data);
+									break;
+								}
+								default:
+									throw new IllegalArgumentException("Unexpected value: " + selectedMinigame);
+								}
 							}
 						}
 						else {
@@ -241,7 +251,7 @@ public class PartyManager implements Listener {
 //			SimpleLogger.log("while"); //uncomment if loop
 			String worldName = NamesAndLines.getMinigameNameInFolder(selectedMinigame) + "_" + map + "_" + number;
 			if(WorldLoadHelper.worldExists(worldName)) {
-				if(!Worlds.usedWorlds.contains(worldName)) {
+				if(!Worlds.usedWorlds.contains(worldName) && !Worlds.temporaryUnaliableWorlds.contains(worldName)) {
 					avaliableAmount++;
 				} else {
 					if(foundWorldsEnd) {

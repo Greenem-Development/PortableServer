@@ -8,5 +8,5 @@ public interface ExtraGameData extends Listener {
 	public GameManager getGm();
 	public void setGm(GameManager gm);
 	
-	public void start();
+	public String start();
 }

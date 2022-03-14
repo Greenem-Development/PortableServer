@@ -27,10 +27,11 @@ public class GameManager {
 	public ArrayList<String> actualPlayers = new ArrayList<>();
 	public String worldName = null;
 	public ExtraGameData extraGameData;
+	public TeamManager tm;
 	
-	/**extraGameData has to be already set**/
+	/**extraGameData and tm has to be already set**/
 	public int start() {
-		if(extraGameData==null) {
+		if(extraGameData==null || tm==null) {
 			return 1;
 		}
 		SimpleLogger.log("start");
@@ -42,8 +43,13 @@ public class GameManager {
 			actualPlayers.add(s);
 		}
 		Bukkit.getPluginManager().registerEvents(extraGameData, References.plugin);
-		extraGameData.start();
-		return 0;
+		String result = extraGameData.start();
+		if(result==null) {
+			return 0;
+		}
+		// maybe check some system messages from it here before sending
+		Bukkit.getPlayerExact(tm.leader).sendMessage(result);
+		return -2;
 	}
 	
 	public void stop() {

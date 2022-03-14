@@ -3,6 +3,7 @@ package org.greenem.plugins.Server.game;
 import java.util.ArrayList;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.greenem.plugins.Server.minigames.murderMystery.MurderMysterySpawnLocations;
 import org.greenem.plugins.Server.util.SimpleLogger;
@@ -20,7 +21,10 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 	public ArrayList<String> heroes = new ArrayList<>();
 	
 	@Override
-	public void start() {
+	public String start() {
+		if(amountOfMurderers+amountOfDetectives > gm.players.size()) {
+			return ChatColor.RED + "You don't have enough players for " + amountOfMurderers + " murderers and " + amountOfDetectives + " detectives!";
+		}
 		ArrayList<Location> allLocs = MurderMysterySpawnLocations.locs.get(gm.map);
 		for (String pName : gm.actualPlayers) {
 			int spawnLocNum = gm.rand.nextInt(allLocs.size());
@@ -31,6 +35,7 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 			loc.setWorld(Bukkit.getWorld(gm.worldName));
 			Bukkit.getPlayerExact(pName).teleport(loc);
 		}
+		return null;
 	}
 	
 	@Override

@@ -1,11 +1,13 @@
 package org.greenem.plugins.Server.data;
 
+import org.bukkit.ChatColor;
 import org.greenem.plugins.Server.game.Minigame;
 
 public class NamesAndLines {
 	public static String HubName = "hub";
 	public static String gameMenuItemName = "Game Menu";
 	public static String closeGuiText = "Close";
+	public static String noMapsAvaliable = ChatColor.RED + "There is currently no world with that map avaliable to start the game!";
 	
 	public static String getMinigameNameInFolder(Minigame minigame) {
 		switch (minigame) {
