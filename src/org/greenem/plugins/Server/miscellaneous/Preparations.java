@@ -30,6 +30,7 @@ public class Preparations {
 			Stash.removeMaterial(p, Material.ARROW);
 			Stash.removeMaterial(p, Material.SPECTRAL_ARROW);
 			Stash.removeMaterial(p, Material.COMPASS);
+			Stash.removeMaterial(p, Material.GOLD_INGOT);
 		}
 		else {
 			switch (m) {
@@ -40,6 +41,7 @@ public class Preparations {
 				Stash.removeMaterial(p, Material.ARROW);
 				Stash.removeMaterial(p, Material.SPECTRAL_ARROW);
 				Stash.removeMaterial(p, Material.COMPASS);
+				Stash.removeMaterial(p, Material.GOLD_INGOT);
 				break;
 			}
 			default:

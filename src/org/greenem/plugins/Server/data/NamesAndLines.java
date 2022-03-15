@@ -9,6 +9,7 @@ public class NamesAndLines {
 	public static String closeGuiText = "Close";
 	public static String noMapsAvaliable = ChatColor.RED + "There is currently no world with that map avaliable to start the game!";
 	public static String MmMessageKilledByUnknownPlayer = "You were killed by a player";
+	public static String goldIngotName = "Gold";
 	
 	public static String getMinigameNameInFolder(Minigame minigame) {
 		switch (minigame) {

@@ -1,6 +1,7 @@
 package org.greenem.plugins.Server.game;
 
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Random;
 
 import org.bukkit.Bukkit;
@@ -13,14 +14,20 @@ import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
 import org.greenem.plugins.Server.data.MinigamesStaticData;
@@ -51,6 +58,14 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 	public boolean gameFinished = false;
 	public ArrayList<ArmorStand> droppedBows = new ArrayList<>();
 	public int distanceToBowToPickUp = 1;
+	public BukkitTask repeatingTask;
+	int goldCurrentlySpawned = 0; // can spawn twice in one place, but its's currently a feature
+	public int murderMysteryMaxGoldSpawned = 15;
+	public int bowDoesWhatPartOfMurderersHp = 1; // 1 - full, 2 - half
+	public int swordDoesWhatPartOfMurderersHp = 2;
+	public int goldSpawnChancePerSecond = 3; // 1 - 50% chance, 2 - 33% chance
+	public int goldSkipSeconds = 1;
+	private int skipTimer = 0;
 	
 	@Override
 	public String start() {
@@ -69,6 +84,8 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 		randomizeRoles();
 		announceRoles();
 		doOtherStuff();
+		ballanceMechanics();
+		startRepeatingRunnables();
 		return null;
 	}
 	
@@ -90,7 +107,6 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 	
 	@SuppressWarnings("unchecked")
 	private void randomizeRoles() {
-		@SuppressWarnings("unchecked")
 		ArrayList<String> playersNeedRole = (ArrayList<String>) actualPlayers.clone();
 		for(int i = 0; i < amountOfMurderers; i++) {
 			if(playersNeedRole.size() > 0) {
@@ -177,10 +193,9 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 		// some config ballance stuff here
 		if(murderers.contains(o.getName())) {
 			// more ballance here
-			int swordDoesWhatPartOfMurdererHp = 2; // half
 			String killedAMurderer = "You have killed another murderer!";
-			damageMurderer(m, swordDoesWhatPartOfMurdererHp, killedAMurderer, e); // maybe they should be different
-			damageMurderer(o, swordDoesWhatPartOfMurdererHp, "You were killed by another murderer", e); // "for some reason"
+			damageMurderer(m, swordDoesWhatPartOfMurderersHp, killedAMurderer, e); // maybe they should be different
+			damageMurderer(o, swordDoesWhatPartOfMurderersHp, "You were killed by another murderer", e); // "for some reason"
 			if(!actualPlayers.contains(o.getName())) { // if victim nurderer died, but not the damager (he was at higher hp before)
 				damageMurderer(m, 1, killedAMurderer, e);
 			}
@@ -195,10 +210,9 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 		SimpleLogger.log("doDamageFromNonMurderer");
 		if(murderers.contains(o.getName())) {
 			// also ballance here
-			int bowDoesWhatPartOfMurdererHp = 2; // half
 			SimpleLogger.log("doDamageFromNonMurderer murderer");
 			String message = "You were killed";
-			damageMurderer(o, bowDoesWhatPartOfMurdererHp, message, e); // maybe shot info
+			damageMurderer(o, bowDoesWhatPartOfMurderersHp, message, e); // maybe shot info
 		}
 		else {
 			killPlayer(o, NamesAndLines.MmMessageKilledByUnknownPlayer);
@@ -344,9 +358,37 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 				}
 			});
 			gameFinished = true;
+			onGameEnd();
 		}
-		
-		if(detectives.size()==0 && innocents.size()==0 && heroes.size()==0) { // murderers win
+		else if(timePast>=fullTime) { // innocents win by time
+			gm.players.forEach(pN -> {
+				Player p = Bukkit.getPlayerExact(pN);
+				if(p!=null) {
+					if(!savedMurderers.contains(pN)) {
+						String message = ChatColor.GREEN + "You won!";
+						String bottomMesage = "Innocents survived!";
+						if(amountOfMurderers>1) {
+							message+= "The murderers didn't kill everyone in time!";
+						} else {
+							message+= "The murderer didn't kill everyone in time!";
+						}
+						p.sendMessage(ChatColor.GRAY + message);
+						
+						p.sendTitle(ChatColor.GREEN + "YOU WON!", ChatColor.GRAY + bottomMesage, 2, 100, 10);
+					}
+					else {
+						String message = ChatColor.RED + "You lost!";
+						String bottomMesage = "You ran out of time!";
+						message+="You didn't kill everyone in time.";
+						p.sendMessage(ChatColor.GRAY + message);
+						p.sendTitle(ChatColor.RED + "YOU LOST!", ChatColor.GRAY + bottomMesage, 2, 100, 10);
+					}
+				}
+			});
+			gameFinished = true;
+			onGameEnd();
+		}
+		else if(detectives.size()==0 && innocents.size()==0 && heroes.size()==0) { // murderers win
 			//String message = ChatColor.GREEN + "You won! You have successfully killed everyone!";
 			actualPlayers.forEach(pN -> {
 				Player p = Bukkit.getPlayerExact(pN);
@@ -376,6 +418,7 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 				}
 			});
 			gameFinished = true;
+			onGameEnd();
 		}
 	}
 	
@@ -548,6 +591,103 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 					break;
 				}
 			}
+		}
+	}
+	
+	private void startRepeatingRunnables() {
+		repeatingTask = Bukkit.getScheduler().runTaskTimer(References.plugin, new Runnable() {
+			@Override
+			public void run() {
+				if(!gameFinished) {
+					timePast++;
+					spawnGoldIfNeeded();
+					checkIfTimeIsUp();
+				}
+			}
+		}, 0, 20);
+	}
+	
+	private void spawnGoldIfNeeded() {
+		if(skipTimer==goldSkipSeconds) {
+			if(goldCurrentlySpawned<murderMysteryMaxGoldSpawned) {
+				int r = rand.nextInt(goldSpawnChancePerSecond);
+				if(r==0) {
+					ArrayList<Location> locs = MurderMysteryLocations.goldSpawnLocations.get(gm.map);
+					int number = rand.nextInt(locs.size());
+					Location l = locs.get(number);
+					l.setWorld(world);
+					ItemStack is = new ItemStack(Material.GOLD_INGOT);
+					is.getItemMeta().setDisplayName(NamesAndLines.goldIngotName);
+					world.dropItemNaturally(l, is);
+					goldCurrentlySpawned++;
+				}
+			}
+			skipTimer = 0;
+		}
+		skipTimer++; // skips first time too, maybe ballance that
+	}
+	
+	private void checkIfTimeIsUp() {
+		checkIfItsAWin();
+	}
+	
+	@EventHandler public void onItemPickup(EntityPickupItemEvent e) {
+		if(e.getEntity() instanceof Player) {
+			if(e.getEntity().getWorld().equals(world)) {
+				Player p = (Player) e.getEntity();
+				ItemStack item = e.getItem().getItemStack();
+				if(item.getType()==Material.GOLD_INGOT) {
+					if(item.getItemMeta().getDisplayName().equals(NamesAndLines.goldIngotName)) {
+						SimpleLogger.debug(item.getAmount());
+//						p.getInventory().remove(item);
+						goldCurrentlySpawned--;
+						// do stuff
+					}
+				}
+			}
+		}
+	}
+	
+	private void onGameEnd() {
+		repeatingTask.cancel(); // sure? right here?
+		
+		
+		Bukkit.getScheduler().runTaskLater(References.plugin, new Runnable() {
+			
+			@Override
+			public void run() {
+				// tp everyone to spawn
+				// clear gold
+				clearGoldOnFloor();
+			}
+		}, 20*5);
+	}
+	
+	private void clearGoldOnFloor() {
+		for (Entity e : world.getEntities()) {
+			if(e.getType()==EntityType.DROPPED_ITEM) {
+				e.remove();
+			}
+		}
+	}
+	
+	private void ballanceMechanics() {
+		// gold
+		if(actualPlayers.size() < 5) {
+			murderMysteryMaxGoldSpawned = 5;
+		} else if(actualPlayers.size() < 10) {
+			murderMysteryMaxGoldSpawned = 10;
+		} else if(actualPlayers.size() < 15) {
+			murderMysteryMaxGoldSpawned = 15;
+		} else {
+			murderMysteryMaxGoldSpawned = 20;
+		}
+		
+		// murderer's hp
+		if(murderers.size() == 1) {
+			bowDoesWhatPartOfMurderersHp = 1;
+		} else {
+			bowDoesWhatPartOfMurderersHp = 2;
 		}
 	}
 }
