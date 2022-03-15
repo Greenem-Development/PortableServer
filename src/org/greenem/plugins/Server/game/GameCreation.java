@@ -35,6 +35,7 @@ public class GameCreation {
 		}
 		int success = gameManager.start();
 		if(success==0) {
+			SimpleLogger.debug("add gameManagers");
 			Structure.gameManagers.add(gameManager);
 			References.playersInGame.add(p.getName());
 			References.playersTeam.get(p.getName()).inGame = true;

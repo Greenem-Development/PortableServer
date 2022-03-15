@@ -4,29 +4,26 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 import org.greenem.plugins.Server.data.NamesAndLines;
 import org.greenem.plugins.Server.game.Minigame;
-import org.greenem.plugins.Server.game.TeamManager;
 
 public class Preparations {
 	public static void preparePlayerInHub(Player p) {
 		turnVanishOff(p);
+		heal(p);
+		removeAllMaterialsAfterDeath(p, null);
 		Stash.addItemStack(p, Stash.createGuiItem(Material.NETHER_STAR, NamesAndLines.gameMenuItemName), 0);
 	}
 	
 	public static void preparePlayerForMinigame(Player p, Minigame m, boolean fromSpawn) {
 		Preparations.turnVanishOff(p);
+		heal(p);
 		removeAllMaterialsAfterDeath(p, m);
 	}
 	
 	public static void removeAllMaterialsAfterDeath(Player p, Minigame m) {
-		removeAllMaterialsAfterDeath(p, m, false);
-	}
-	
-	public static void removeAllMaterialsAfterDeath(Player p, Minigame m, boolean thereWasNoDeath) {
-		if(thereWasNoDeath) {
+		if(m==null) { // make the list better
 			Stash.removeMaterial(p, Material.NETHER_STAR); // , NamesAndLines.gameMenuItemName
 			Stash.removeMaterial(p, Material.BOW);
 			Stash.removeMaterial(p, Material.IRON_SWORD);
@@ -71,5 +68,10 @@ public class Preparations {
 		}
 		p.removePotionEffect(PotionEffectType.INVISIBILITY);
         p.setCanPickupItems(true);
+	}
+	
+	public static void heal(Player p) {
+		p.setHealth(20);
+		p.setFoodLevel(20);
 	}
 }

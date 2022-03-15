@@ -42,8 +42,13 @@ public class GameManager {
 		Bukkit.getPluginManager().registerEvents(extraGameData, References.plugin);
 		String result = extraGameData.start();
 		// maybe check some system messages from it here before sending
-		Bukkit.getPlayerExact(tm.leader).sendMessage(result);
-		return -2;
+		if(result!=null && !result.equals("")) {
+			Bukkit.getPlayerExact(tm.leader).sendMessage(result);
+			return -2;
+		}
+		else {
+			return 0;
+		}
 	}
 	
 	public void stop() {

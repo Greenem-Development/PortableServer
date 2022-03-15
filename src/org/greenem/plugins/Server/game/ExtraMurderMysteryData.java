@@ -16,6 +16,7 @@ import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -141,18 +142,19 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 	
 	@SuppressWarnings("deprecation")
 	private boolean hasItemInSomeHand(Player p, Material m) {
-		return p.getItemInHand().getType()==m || p.getInventory().getItemInOffHand().getType()==m;
+		return (p.getItemInHand().getType()==m || p.getInventory().getItemInOffHand().getType()==m);
 	}
 	
 	@SuppressWarnings("deprecation")
 	private void damageMurderer(Player p, int minusMaxDevideByWhat, String message) {
 		if(p.getHealth()-p.getMaxHealth()/minusMaxDevideByWhat>0.1) {
-			Bukkit.getScheduler().scheduleSyncDelayedTask(References.plugin, new Runnable() { // can have multihit tick problems, think about it later
+			new BukkitRunnable() { // can have multihit tick problems, think about it later
 				@Override
 				public void run() {
+					SimpleLogger.debug("-health");
 					p.setHealth(p.getHealth()-p.getMaxHealth()/minusMaxDevideByWhat);
 				}
-			}, 1);
+			}.runTaskLater(References.plugin, 2);
 		}
 		else {
 			killPlayer(p, message);
@@ -178,9 +180,11 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 	
 	private void doDamageFromNonMurderer(Player m, Player o) {
 		// some config ballance stuff here
+		SimpleLogger.log("doDamageFromNonMurderer");
 		if(murderers.contains(o.getName())) {
 			// also ballance here
 			int bowDoesWhatPartOfMurdererHp = 2; // half
+			SimpleLogger.log("doDamageFromNonMurderer murderer");
 			damageMurderer(o, bowDoesWhatPartOfMurdererHp, "You were killed"); // maybe shot info
 		}
 		else {
@@ -252,6 +256,9 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 					}
 				}
 			}
+			SimpleLogger.debug(victim.toString());
+			SimpleLogger.debug(damager.toString());
+			SimpleLogger.debug(arrow.toString());
 			if(victim!=null && victim.getGameMode()!=GameMode.CREATIVE) {
 				if(murderers.contains(damager.getName())) {
 					if(hasItemInSomeHand(damager, Material.IRON_SWORD) || arrow!=null) {
@@ -471,5 +478,47 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 	@Override
 	public void setGm(GameManager gm) {
 		this.gm = gm;
+	}
+	
+	@EventHandler
+	public void disablePlayerDamage(EntityDamageEvent e) {
+		if(e.getEntity() instanceof Player) {
+			if(e.getEntity().getWorld().equals(world)) {
+				switch (e.getCause()) {
+					case FALL: {
+						e.setCancelled(true);
+						break;
+					}
+					case DROWNING: {
+						e.setCancelled(true);
+						break;
+					}
+					case FIRE_TICK: {
+						e.setCancelled(true);
+						break;
+					}
+					case FIRE: { // what about lava, maybe very fast damage, almost like in fundy's difficulties
+						e.setCancelled(true);
+						break;
+					}
+					case HOT_FLOOR: {
+						e.setCancelled(true);
+						break;
+					}
+					case VOID: {
+						if(e.getEntity().getLocation().getY() < -20) {
+							e.setCancelled(true);
+						}
+						break;
+					}
+					case CONTACT: {
+						e.setCancelled(true);
+						break;
+					}
+				default:
+					break;
+				}
+			}
+		}
 	}
 }
