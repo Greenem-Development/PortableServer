@@ -1,4 +1,4 @@
-package org.greenem.plugins.Server.game;
+package org.greenem.plugins.Server.minigames.murderMystery;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -33,7 +33,8 @@ import org.bukkit.util.Vector;
 import org.greenem.plugins.Server.data.MinigamesStaticData;
 import org.greenem.plugins.Server.data.NamesAndLines;
 import org.greenem.plugins.Server.data.References;
-import org.greenem.plugins.Server.minigames.murderMystery.MurderMysteryLocations;
+import org.greenem.plugins.Server.game.ExtraGameData;
+import org.greenem.plugins.Server.game.GameManager;
 import org.greenem.plugins.Server.miscellaneous.Preparations;
 import org.greenem.plugins.Server.miscellaneous.Stash;
 import org.greenem.plugins.Server.util.SimpleLogger;

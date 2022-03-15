@@ -17,6 +17,7 @@ import org.greenem.plugins.Server.data.References;
 import org.greenem.plugins.Server.data.Structure;
 import org.greenem.plugins.Server.data.Worlds;
 import org.greenem.plugins.Server.main.Main;
+import org.greenem.plugins.Server.minigames.murderMystery.ExtraMurderMysteryData;
 import org.greenem.plugins.Server.minigames.murderMystery.MurderMysterySettingsItem;
 import org.greenem.plugins.Server.minigames.murderMystery.MurderMysterySetupSettings;
 import org.greenem.plugins.Server.miscellaneous.Stash;

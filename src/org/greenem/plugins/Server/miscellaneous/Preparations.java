@@ -17,6 +17,7 @@ public class Preparations {
 	}
 	
 	public static void preparePlayerForMinigame(Player p, Minigame m, boolean fromSpawn) {
+		p.setGameMode(GameMode.SURVIVAL); // customise later
 		Preparations.turnVanishOff(p);
 		heal(p);
 		removeAllMaterialsAfterDeath(p, m);
