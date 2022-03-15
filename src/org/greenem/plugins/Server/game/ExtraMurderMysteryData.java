@@ -17,6 +17,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -201,7 +202,11 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 		}
 		else {
 			killPlayer(o, NamesAndLines.MmMessageKilledByUnknownPlayer);
-			killPlayer(m, "You have killed a wrong player");
+			String message = "You have killed a wrong player"; 
+			if(m.equals(o)) {
+				message = "You have killed yourself";
+			}
+			killPlayer(m, message);
 		}
 	}
 	
@@ -250,7 +255,6 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 	
 	@EventHandler
 	public void MurderMysterySwordDamage(EntityDamageByEntityEvent e) {
-		SimpleLogger.log("EntityDamageByEntityEvent " + e.getDamager().getClass().getName());
 		if(e.getEntity().getWorld().equals(world)) {
 			Player victim = null;
 			Player damager = null;
@@ -267,9 +271,6 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 					}
 				}
 			}
-			SimpleLogger.debug(victim.toString());
-			SimpleLogger.debug(damager.toString());
-			SimpleLogger.debug(arrow.toString());
 			if(victim!=null && victim.getGameMode()!=GameMode.CREATIVE) {
 				if(murderers.contains(damager.getName())) {
 					if(hasItemInSomeHand(damager, Material.IRON_SWORD) || arrow!=null) {
@@ -289,6 +290,25 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 				else if(innocents.contains(damager.getName())) {
 					if(arrow!=null) {
 						doDamageFromNonMurderer(damager, victim, e);
+					}
+				}
+			}
+			if(arrow!=null && !damager.isDead()) {
+				Stash.addItemStack(damager, new ItemStack(Material.ARROW, 1), 9);
+			}
+		}
+	}
+	
+	@EventHandler
+	public void MurderMysteryArrowHitABlock(ProjectileHitEvent e) {
+		if(e.getEntity().getWorld().equals(world)){
+			if(e.getEntity().getShooter() instanceof Player) {
+				if(e.getEntity() instanceof Arrow) {
+					SimpleLogger.debug(e.getHitEntity());
+					Player p = (Player) e.getEntity().getShooter();
+					if(detectives.contains(p.getName()) || heroes.contains(p.getName())) {
+						e.getEntity().remove();
+						Stash.addItemStack(p, new ItemStack(Material.ARROW, 1), 9);
 					}
 				}
 			}
@@ -364,7 +384,6 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 		if(!detectives.contains(p.getName()) && !heroes.contains(p.getName())) {
 			return;
 		}
-		
 		loc = loc.getBlock().getLocation(); // is that a copy already or bit, but doesn't matter already actually
 		loc.setX(loc.getX()+0.5);
 		loc.setZ(loc.getZ()+0.5);

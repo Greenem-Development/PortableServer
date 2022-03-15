@@ -6,6 +6,14 @@ public class SimpleLogger {
 	public static String pluginName = "PortableServer";
 	public static String color = ""; // + ChatColor.WHITE;
 	
+	public static void log(Object o) {
+		if(o!=null) {
+			log(o.toString());
+		} else {
+			log("null");
+		}
+	}
+	
 	public static void log(String s) {
 		s = color + "[" + pluginName + "] " + s;
 		Bukkit.getConsoleSender().sendMessage(s);
@@ -33,6 +41,14 @@ public class SimpleLogger {
 	
 	public static void log(short s) {
 		log(s + "");
+	}
+	
+	public static void debug(Object o) {
+		if(o!=null) {
+			debug(o.toString());
+		} else {
+			debug("null");
+		}
 	}
 	
 	public static void debug(String s) {

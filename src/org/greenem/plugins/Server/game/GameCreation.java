@@ -3,6 +3,7 @@ package org.greenem.plugins.Server.game;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import org.greenem.plugins.Server.data.DevelopmentTests;
 import org.greenem.plugins.Server.data.MinigamesStaticData;
 import org.greenem.plugins.Server.data.NamesAndLines;
 import org.greenem.plugins.Server.data.References;
@@ -26,6 +27,10 @@ public class GameCreation {
 			}
 			if(tm.players.size()<2) {
 				p.sendMessage("You can't start this minigame alone!");
+				return;
+			}
+			if(tm.players.size()<minPlayers) {
+				p.sendMessage("You can't start this minigame with less than " + minPlayers + " players!");
 				return;
 			}
 			for (String serverPlayer : tm.players) { // for test

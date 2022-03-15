@@ -71,6 +71,6 @@ public class MinigamesStaticData {
 	}
 	
 	private static void initMinimumPlayersForGame() {
-		minimumPlayersForGame.put(Minigame.MURDER_MYSTERY, 2); //3
+		minimumPlayersForGame.put(Minigame.MURDER_MYSTERY, 2); //3 or at least 2
 	}
 }
