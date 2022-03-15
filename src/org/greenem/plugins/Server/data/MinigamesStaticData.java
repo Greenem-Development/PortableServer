@@ -51,6 +51,25 @@ public class MinigamesStaticData {
 		}
 	}
 	
+	public static int getTimeForMap(Minigame minigame, String map) {
+		switch (minigame) {
+		case MURDER_MYSTERY: {
+			switch (map) {
+			case "map1": {
+				return 13000;
+			}
+			case "map2": {
+				return 1000;
+			}
+			default:
+				throw new IllegalArgumentException("Unexpected value in getFullMapName#map: " + map);
+			}
+		}
+		default:
+			throw new IllegalArgumentException("Unexpected value in getFullMapName#minigame: " + minigame);
+		}
+	}
+	
 	private static void initMinimumPlayersForGame() {
 		minimumPlayersForGame.put(Minigame.MURDER_MYSTERY, 2); //3
 	}

@@ -197,9 +197,9 @@ public class TeamManager implements Listener {
 								switch (selectedMinigame) {
 								case MURDER_MYSTERY: {
 									ExtraMurderMysteryData data = new ExtraMurderMysteryData();
-									data.amountOfMurderers = settingsNumbers.get(MurderMysterySetupSettings.getArrayPosition(MurderMysterySettingsItem.MURDERERS));
-									data.amountOfDetectives = settingsNumbers.get(MurderMysterySetupSettings.getArrayPosition(MurderMysterySettingsItem.DETECTIVES));
-									data.fullTime = settingsNumbers.get(MurderMysterySetupSettings.getArrayPosition(MurderMysterySettingsItem.MAX_TIME));
+									data.amountOfMurderers = MurderMysterySetupSettings.getAmountOfMurderers(settingsNumbers.get(MurderMysterySetupSettings.getArrayPosition(MurderMysterySettingsItem.MURDERERS)));
+									data.amountOfDetectives = MurderMysterySetupSettings.getAmountOfDetectives(settingsNumbers.get(MurderMysterySetupSettings.getArrayPosition(MurderMysterySettingsItem.DETECTIVES)));
+									data.fullTime = MurderMysterySetupSettings.getMaxTimeInt(settingsNumbers.get(MurderMysterySetupSettings.getArrayPosition(MurderMysterySettingsItem.MAX_TIME)));
 									GameCreation.startNewGame(p, selectedMinigame, map, data);
 									break;
 								}

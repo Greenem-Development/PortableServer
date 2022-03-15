@@ -31,6 +31,19 @@ public class MurderMysterySetupSettings {
 		}
 	}
 	
+	public static int getMaxTimeInt(int id) {
+		switch (id) {
+		case 0:
+			return 300;
+		case 1:
+			return 600;
+		case 2:
+			return 120;
+		default:
+			throw new IllegalArgumentException("Unexpected value: " + id);
+		}
+	}
+	
 	public static String[] getOptionsList(MurderMysterySettingsItem settings) {
 		switch (settings) {
 		case MODE:
@@ -43,6 +56,38 @@ public class MurderMysterySetupSettings {
 			return new String[] {"5 Minutes", "10 Minutes", "2 Minutes"};
 		default:
 			throw new IllegalArgumentException("Unexpected value: " + settings);
+		}
+	}
+	
+	public static int getAmountOfMurderers(int pos) {
+		switch (pos) {
+		case 0: { // first item in gui list, id=0, but says 1 murderer
+			return 1;
+		}
+		case 1: {
+			return 2;
+		}
+		case 2: {
+			return 3;
+		}
+		default:
+			throw new IllegalArgumentException("Unexpected value: " + pos);
+		}
+	}
+	
+	public static int getAmountOfDetectives(int pos) {
+		switch (pos) {
+		case 0: { // first item in gui list, id=0, but says 1 detective
+			return 1;
+		}
+		case 1: {
+			return 2;
+		}
+		case 2: {
+			return 3;
+		}
+		default:
+			throw new IllegalArgumentException("Unexpected value: " + pos);
 		}
 	}
 }

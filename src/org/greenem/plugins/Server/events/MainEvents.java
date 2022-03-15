@@ -5,6 +5,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -25,6 +26,7 @@ public class MainEvents implements Listener {
 		WorldLoadHelper.loadWorld(NamesAndLines.HubName);
 		p.teleport(Locs.mainWorldSpawn);
 		Preparations.preparePlayerInHub(p);
+		p.getInventory().setHeldItemSlot(0);
 	}
 	
 	@EventHandler
@@ -35,8 +37,10 @@ public class MainEvents implements Listener {
 	
 	@EventHandler
 	public static void itemInHandClick(PlayerInteractEvent e) {
+		// what about Action.Physical?
 		Player p = e.getPlayer();
-		if(e.getItem()!=null && e.getItem().getType()==Material.NETHER_STAR && e.getItem().getItemMeta().getDisplayName().equals(NamesAndLines.gameMenuItemName)) {
+		if((e.getAction()==Action.RIGHT_CLICK_AIR || e.getAction()==Action.RIGHT_CLICK_BLOCK) &&
+				e.getItem()!=null && e.getItem().getType()==Material.NETHER_STAR && e.getItem().getItemMeta().getDisplayName().equals(NamesAndLines.gameMenuItemName)) {
 			TeamManager tm = References.playersTeam.get(p.getName());
 			if(tm==null || (tm!=null && tm.selectedMinigame==null)) { // do I need the second null check?
 				e.getPlayer().openInventory(GameSelectScreen.menu);

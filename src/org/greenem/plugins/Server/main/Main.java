@@ -30,7 +30,7 @@ import org.greenem.plugins.Server.game.GameSelectScreen;
 import org.greenem.plugins.Server.game.CreateTeamManager;
 import org.greenem.plugins.Server.game.ExtraGameData;
 import org.greenem.plugins.Server.game.Minigame;
-import org.greenem.plugins.Server.minigames.murderMystery.MurderMysterySpawnLocations;
+import org.greenem.plugins.Server.minigames.murderMystery.MurderMysteryLocations;
 import org.greenem.plugins.Server.miscellaneous.Stash;
 import org.greenem.plugins.Server.util.SimpleLogger;
 
@@ -225,7 +225,7 @@ public class Main extends JavaPlugin implements Listener {
 		InitFiles();
 		RegisterAllListeners();
 		MinigamesStaticData.init();
-		MurderMysterySpawnLocations.init();
+		MurderMysteryLocations.init();
 		OutsideData.init();
 		GameSelectScreen.init();
 	}

@@ -13,7 +13,7 @@ import org.greenem.plugins.Server.data.NamesAndLines;
 import org.greenem.plugins.Server.data.References;
 import org.greenem.plugins.Server.data.Structure;
 import org.greenem.plugins.Server.data.Worlds;
-import org.greenem.plugins.Server.minigames.murderMystery.MurderMysterySpawnLocations;
+import org.greenem.plugins.Server.minigames.murderMystery.MurderMysteryLocations;
 import org.greenem.plugins.Server.miscellaneous.Preparations;
 import org.greenem.plugins.Server.miscellaneous.WorldLoadHelper;
 import org.greenem.plugins.Server.util.SimpleLogger;
@@ -44,9 +44,6 @@ public class GameManager {
 		}
 		Bukkit.getPluginManager().registerEvents(extraGameData, References.plugin);
 		String result = extraGameData.start();
-		if(result==null) {
-			return 0;
-		}
 		// maybe check some system messages from it here before sending
 		Bukkit.getPlayerExact(tm.leader).sendMessage(result);
 		return -2;

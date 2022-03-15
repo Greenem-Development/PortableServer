@@ -7,8 +7,8 @@ import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
-public class MurderMysterySpawnLocations {
-	public static Map<String, ArrayList<Location>> locs = new HashMap<>();
+public class MurderMysteryLocations {
+	public static Map<String, ArrayList<Location>> gameStartSpawnLocations = new HashMap<>();
 	
 	public static void init() {
 		ArrayList<Location> current = new ArrayList<>();
@@ -39,6 +39,16 @@ public class MurderMysterySpawnLocations {
 		current.add(new Location(Bukkit.getWorld(""), -16, 106, 7));
 		current.add(new Location(Bukkit.getWorld(""), -18, 108, -5));
 		current.add(new Location(Bukkit.getWorld(""), -23, 108, -9));
-		locs.put("map1", current);
+		gameStartSpawnLocations.put("map1", current);
+	}
+	
+	public static Location getMurderMysterySpectatorSpawn(String map) {
+		switch (map) {
+		case "map1": {
+			return new Location(null, 0.5, 105, 0.5);
+		}
+		default:
+			throw new IllegalArgumentException("Unexpected value: " + map);
+		}
 	}
 }

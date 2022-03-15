@@ -106,14 +106,14 @@ public class Stash {
         return null;
 	}
 
-	public static void AddItemStack(Player p, ItemStack ItemStack, int slot) {
+	public static void addItemStack(Player p, ItemStack ItemStack, int slot) {
 		if(!p.getInventory().contains(ItemStack)) {
 			if(p.getInventory().getItem(slot) == null) p.getInventory().setItem(slot, ItemStack);
 			else p.getInventory().addItem(ItemStack);
 		}
 	}
 
-	public static void RemoveMaterial(Player p, Material material) {
+	public static void removeMaterial(Player p, Material material) {
 		if(p.getInventory().contains(material)) {
 			p.getInventory().remove(material);
 		}

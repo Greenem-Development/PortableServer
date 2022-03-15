@@ -34,4 +34,33 @@ public class SimpleLogger {
 	public static void log(short s) {
 		log(s + "");
 	}
+	
+	public static void debug(String s) {
+		s = color + "[" + pluginName + " DEBUG] " + s;
+		Bukkit.getConsoleSender().sendMessage(s);
+	}
+	
+	public static void debug(int s) {
+		debug(s + "");
+	}
+	
+	public static void debug(boolean s) {
+		debug(s + "");
+	}
+	
+	public static void debug(double s) {
+		debug(s + "");
+	}
+	
+	public static void debug(float s) {
+		debug(s + "");
+	}
+	
+	public static void debug(char s) {
+		debug(s + "");
+	}
+	
+	public static void debug(short s) {
+		debug(s + "");
+	}
 }

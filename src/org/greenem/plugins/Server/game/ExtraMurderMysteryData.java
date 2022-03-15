@@ -1,15 +1,40 @@
 package org.greenem.plugins.Server.game;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
+import org.bukkit.GameRule;
 import org.bukkit.Location;
-import org.greenem.plugins.Server.minigames.murderMystery.MurderMysterySpawnLocations;
+import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.World;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.EulerAngle;
+import org.bukkit.util.Vector;
+import org.greenem.plugins.Server.data.MinigamesStaticData;
+import org.greenem.plugins.Server.data.NamesAndLines;
+import org.greenem.plugins.Server.data.References;
+import org.greenem.plugins.Server.minigames.murderMystery.MurderMysteryLocations;
+import org.greenem.plugins.Server.miscellaneous.Preparations;
+import org.greenem.plugins.Server.miscellaneous.Stash;
 import org.greenem.plugins.Server.util.SimpleLogger;
 
 public class ExtraMurderMysteryData implements ExtraGameData {
 	public GameManager gm;
+	
+	ArrayList<String> actualPlayers;
+	
+	Random rand = new Random();
 	public int fullTime = -1;
 	public int timePast = 0;
 	public int amountOfMurderers = 1;
@@ -19,21 +44,365 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 	public ArrayList<String> detectives = new ArrayList<>();
 	public ArrayList<String> innocents = new ArrayList<>();
 	public ArrayList<String> heroes = new ArrayList<>();
+	public World world;
+	public boolean gameFinished = false;
+	public ArrayList<ArmorStand> droppedBows = new ArrayList<>();
+	public int distanceToBowToPickUp = 1;
 	
 	@Override
 	public String start() {
 		if(amountOfMurderers+amountOfDetectives > gm.players.size()) {
 			return ChatColor.RED + "You don't have enough players for " + amountOfMurderers + " murderers and " + amountOfDetectives + " detectives!";
 		}
-		ArrayList<Location> allLocs = MurderMysterySpawnLocations.locs.get(gm.map);
+		actualPlayers = gm.actualPlayers;
+		for (String s : actualPlayers) {
+			Preparations.preparePlayerForMinigame(Bukkit.getPlayerExact(s), gm.minigameType, true);
+		}
+		teleportEveryone();
+		randomizeRoles();
+		announceRoles();
+		doOtherStuff();
+		return null;
+	}
+	
+	private void teleportEveryone() {
+		ArrayList<Location> allLocs = MurderMysteryLocations.gameStartSpawnLocations.get(gm.map);
 		for (String pName : gm.actualPlayers) {
-			int spawnLocNum = gm.rand.nextInt(allLocs.size());
-			float rotation = gm.rand.nextFloat(-180, 180);
-			SimpleLogger.log(gm.map);
+			int spawnLocNum = rand.nextInt(allLocs.size());
+			float rotation = rand.nextFloat(-180, 180);
 			Location loc = allLocs.get(spawnLocNum).clone().add(0.5, 0, 0.5);
 			loc.setYaw(rotation);
-			loc.setWorld(Bukkit.getWorld(gm.worldName));
+			world = Bukkit.getWorld(gm.worldName);
+			loc.setWorld(world);
 			Bukkit.getPlayerExact(pName).teleport(loc);
+			loc.getWorld().setTime(MinigamesStaticData.getTimeForMap(gm.minigameType, gm.map));
+		}
+	}
+	
+	private void randomizeRoles() {
+		@SuppressWarnings("unchecked")
+		ArrayList<String> playersNeedRole = (ArrayList<String>) actualPlayers.clone();
+		for(int i = 0; i < amountOfMurderers; i++) {
+			if(playersNeedRole.size() > 0) {
+				int num = rand.nextInt(playersNeedRole.size());
+				SimpleLogger.debug("Murderer " + num);
+				murderers.add(playersNeedRole.get(num));
+				playersNeedRole.remove(num);
+			}
+		}
+		for(int i = 0; i < amountOfDetectives; i++) {
+			if(playersNeedRole.size() > 0) {
+				int num = rand.nextInt(playersNeedRole.size());
+				SimpleLogger.debug("Detective " + num);
+				detectives.add(playersNeedRole.get(num));
+				playersNeedRole.remove(num);
+			}
+		}
+		for(int i = 0; i < playersNeedRole.size(); i++) {
+			if(playersNeedRole.size() > 0) { //maybe no innocents already
+				SimpleLogger.debug("Innocent ");
+				innocents.add(playersNeedRole.get(i));
+				playersNeedRole.remove(i);
+			}
+		}
+	}
+	
+	private void announceRoles() {
+		for (String s : actualPlayers) {
+			Player p = Bukkit.getPlayerExact(s);
+			if(murderers.contains(p.getName())) {
+				p.sendTitle(ChatColor.GRAY + "" + ChatColor.BOLD + "" + ChatColor.ITALIC + "You are a " + ChatColor.RED + "MURDERER", "", 5, 30, 10);
+				p.getInventory().setHeldItemSlot(4);
+				Stash.addItemStack(p, new ItemStack(Material.IRON_SWORD, 1), 0);
+			}
+			else if(detectives.contains(p.getName())) {
+				p.sendTitle(ChatColor.GRAY + "" + ChatColor.BOLD + "" + ChatColor.ITALIC + "You are a " + ChatColor.YELLOW + "DETECTIVE", "", 5, 30, 10);
+				p.getInventory().setHeldItemSlot(4);
+				Stash.addItemStack(p, new ItemStack(Material.BOW, 1), 0);
+				Stash.addItemStack(p, new ItemStack(Material.ARROW, 1), 9);
+			}
+			else if(innocents.contains(p.getName())) {
+				p.sendTitle(ChatColor.GRAY + "" + ChatColor.BOLD + "" + ChatColor.ITALIC + "You are a " + ChatColor.GREEN + "INNOCENT", "", 5, 30, 10);
+			}
+		}
+	}
+	
+	private void doOtherStuff() {
+		world.setGameRule(GameRule.NATURAL_REGENERATION, false);
+	}
+	
+	@SuppressWarnings("deprecation")
+	private boolean hasItemInSomeHand(Player p, Material m) {
+		return p.getItemInHand().getType()==m || p.getInventory().getItemInOffHand().getType()==m;
+	}
+	
+	@SuppressWarnings("deprecation")
+	private void damageMurderer(Player p, int minusMaxDevideByWhat, String message) {
+		if(p.getHealth()-p.getMaxHealth()/minusMaxDevideByWhat>0.1) {
+			Bukkit.getScheduler().scheduleSyncDelayedTask(References.plugin, new Runnable() { // can have multihit tick problems, think about it later
+				@Override
+				public void run() {
+					p.setHealth(p.getHealth()-p.getMaxHealth()/minusMaxDevideByWhat);
+				}
+			}, 1);
+		}
+		else {
+			killPlayer(p, message);
+		}
+	}
+	
+	private void doDamageFromMurderer(Player m, Player o) {
+		// some config ballance stuff here
+		if(murderers.contains(o.getName())) {
+			// more ballance here
+			int swordDoesWhatPartOfMurdererHp = 2; // half
+			String killedAMurderer = "You have killed another murderer!";
+			damageMurderer(m, swordDoesWhatPartOfMurdererHp, killedAMurderer); // maybe they should be different
+			damageMurderer(o, swordDoesWhatPartOfMurdererHp, "You were killed by another murderer"); // "for some reason"
+			if(!actualPlayers.contains(o.getName())) { // if victim nurderer died, but not the damager (he was at higher hp before)
+				damageMurderer(m, 1, killedAMurderer);
+			}
+		}
+		else {
+			killPlayer(o, NamesAndLines.MmMessageKilledByUnknownPlayer);
+		}
+	}
+	
+	private void doDamageFromNonMurderer(Player m, Player o) {
+		// some config ballance stuff here
+		if(murderers.contains(o.getName())) {
+			// also ballance here
+			int bowDoesWhatPartOfMurdererHp = 2; // half
+			damageMurderer(o, bowDoesWhatPartOfMurdererHp, "You were killed"); // maybe shot info
+		}
+		else {
+			killPlayer(o, NamesAndLines.MmMessageKilledByUnknownPlayer);
+			killPlayer(m, "You have killed a wrong player");
+		}
+	}
+	
+	private void killPlayer(Player p, String message) {
+		Location deathLocation = p.getLocation().clone();
+		p.sendTitle(ChatColor.ITALIC + "" + ChatColor.BOLD + "" + ChatColor.DARK_RED + "YOU DIED", ChatColor.ITALIC + "" + ChatColor.GRAY + message, 5, 40, 30);
+		p.sendMessage(message);
+		spawnBloodParticles(p.getLocation());
+		Preparations.turnVanishOn(p);
+		Preparations.removeAllMaterialsAfterDeath(p, gm.minigameType);
+		Location l = MurderMysteryLocations.getMurderMysterySpectatorSpawn(gm.map);
+		l.setWorld(world);
+		p.teleport(l);
+		
+		murderers.remove(p.getName());
+		detectives.remove(p.getName());
+		innocents.remove(p.getName());
+		heroes.remove(p.getName());
+		actualPlayers.remove(p.getName());
+		gm.actualPlayers.remove(p.getName()); // bad
+		checkIfItsAWin();
+		
+		Bukkit.getScheduler().scheduleSyncDelayedTask(References.plugin, new Runnable() {
+			@Override
+			public void run() {
+				p.setHealth(20.0);
+			}
+		}, 1);
+		
+		spawnBow(p, deathLocation);
+	}
+	
+	private void spawnBloodParticles(Location loc) {
+		Material blood = Material.REDSTONE_BLOCK;
+		Bukkit.getOnlinePlayers().forEach(p -> {
+			if(p.getWorld().getName().equals(loc.getWorld().getName())) {
+				spawnBloodParticle(p, loc, blood, 0);
+				spawnBloodParticle(p, loc, blood, 0.5f);
+				spawnBloodParticle(p, loc, blood, 1f);
+				spawnBloodParticle(p, loc, blood, 1.5f);
+			}
+		});
+	}
+	
+	private void spawnBloodParticle(Player p, Location loc, Material blood, float d) {
+		p.spawnParticle(Particle.BLOCK_CRACK, new Location(loc.getWorld(), loc.getX(), loc.getY() + d, loc.getZ()), 100, blood.createBlockData());
+	}
+	
+	@EventHandler
+	public void MurderMysterySwordDamage(EntityDamageByEntityEvent e) {
+		SimpleLogger.log("EntityDamageByEntityEvent " + e.getDamager().getClass().getName());
+		if(e.getEntity().getWorld().equals(world)) {
+			Player victim = null;
+			Player damager = null;
+			Arrow arrow = null;
+			if(e.getEntity() instanceof Player) {
+				victim = (Player) e.getEntity();
+				if(e.getDamager() instanceof Player) {
+					damager = (Player) e.getDamager();
+				}
+				else if (e.getDamager() instanceof Arrow) {
+					arrow = (Arrow) e.getDamager();
+					if(arrow.getShooter() instanceof Player) {
+						damager = (Player) arrow.getShooter();
+					}
+				}
+			}
+			if(victim!=null && victim.getGameMode()!=GameMode.CREATIVE) {
+				if(murderers.contains(damager.getName())) {
+					if(hasItemInSomeHand(damager, Material.IRON_SWORD) || arrow!=null) {
+						doDamageFromMurderer(damager, victim);
+					}
+				}
+				else if(detectives.contains(damager.getName())) {
+					if(arrow!=null) {
+						doDamageFromNonMurderer(damager, victim);
+					}
+				}
+				else if(heroes.contains(damager.getName())) {
+					if(arrow!=null) {
+						doDamageFromNonMurderer(damager, victim);
+					}
+				}
+				else if(innocents.contains(damager.getName())) {
+					if(arrow!=null) {
+						doDamageFromNonMurderer(damager, victim);
+					}
+				}
+			}
+		}
+	}
+	
+	private void checkIfItsAWin() {
+		if(murderers.size()==0) {
+			String message = "You won! All murderers died!";
+			actualPlayers.forEach(pN -> {
+				Player p = Bukkit.getPlayerExact(pN);
+				p.sendMessage(message);
+				p.sendTitle(ChatColor.GREEN + "YOU WON!", ChatColor.GRAY + "All murderers died!", 2, 40, 10);
+			});
+			gameFinished = true;
+		}
+		
+		if(detectives.size()==0 && innocents.size()==0 && heroes.size()==0) {
+			String message = "You won! You have successfully killed everyone!";
+			actualPlayers.forEach(pN -> {
+				Player p = Bukkit.getPlayerExact(pN);
+				p.sendMessage(message);
+				p.sendTitle(ChatColor.GREEN + "YOU WON!", ChatColor.GRAY + "All murderers died!", 2, 40, 10);
+			});
+			gameFinished = true;
+		}
+	}
+	
+	@SuppressWarnings("deprecation")
+	private void spawnBow(Player p, Location loc) {
+		if(!detectives.contains(p.getName()) && !heroes.contains(p.getName())) {
+			return;
+		}
+		
+		loc = loc.getBlock().getLocation(); // is that a copy already or bit, but doesn't matter already actually
+		loc.setX(loc.getX()+0.5);
+		loc.setZ(loc.getZ()+0.5);
+		ArmorStand stand = world.spawn(loc, ArmorStand.class);
+		stand.setVisible(false);
+		stand.setBasePlate(false);
+		stand.setCanPickupItems(false);
+        stand.setCollidable(false);
+        stand.setGravity(false);
+        stand.setRemoveWhenFarAway(false);
+        stand.setRightArmPose(new EulerAngle(4.69, 0, 0));
+        stand.setItemInHand(new ItemStack(Material.BOW));
+        droppedBows.add(stand);
+        ItemStack compass = new ItemStack(Material.COMPASS, 1);
+		for (String s : innocents) {
+        	Player inn = Bukkit.getPlayerExact(s);
+        	Stash.addItemStack(inn, compass, 4);
+        }
+        updateCompasses();
+        final Location center = loc;
+        final float radius = 0.2f;
+        final float radPerSec = 3f;
+        final float radPerTick = radPerSec / 20f;
+        	new BukkitRunnable() {
+        		int tick = 0;
+        		@Override
+        		public void run() {
+        			if(gameFinished || stand==null) {
+        				SimpleLogger.log("stand got null value");
+        				cancel();
+        				if(stand!=null && !stand.isDead()) {
+        					stand.remove();
+        				}
+        			}
+        			++tick;
+        			Location loc = getLocationAroundCircle(center, radius, radPerTick * tick);
+                    stand.setVelocity(new Vector(0, 0, 0));
+                    stand.teleport(loc);
+        		}
+        	}.runTaskTimer(References.plugin, 0, 2);
+	}
+	
+	private Location getLocationAroundCircle(Location center, double radius, double angleInRadian) {
+        double x = center.getX() - radius * Math.cos(angleInRadian);
+//        double y = center.getY() - radius * Math.sin(angleInRadian);
+        double z = center.getZ() - radius * Math.sin(angleInRadian);
+
+        Location loc = new Location(center.getWorld(), x, center.getY(), z);
+        Vector difference = center.toVector().clone().subtract(loc.toVector()); // this sets the returned location's direction toward the center of the circle
+        loc.setDirection(difference);
+
+        return loc;
+    }
+	
+	@EventHandler
+	public void MurderMysteryPickingUpBow(PlayerMoveEvent e) {
+		Player p = e.getPlayer();
+		if(p.getWorld().equals(world)) {
+			if(innocents.contains(p.getName())) {
+				for(int i = 0; i < droppedBows.size(); i++) {
+					if(droppedBows.get(i).getLocation().distance(p.getLocation()) <= distanceToBowToPickUp) {
+						heroes.add(p.getName());
+						innocents.remove(p.getName());
+						ArmorStand stand = droppedBows.get(i);
+						droppedBows.remove(i);
+						stand.remove();
+						Stash.addItemStack(p, new ItemStack(Material.BOW, 1), 0);
+						Stash.addItemStack(p, new ItemStack(Material.ARROW, 1), 9);
+						if(droppedBows.size()==0) {
+							for (String inn : innocents) {
+								Stash.removeMaterial(Bukkit.getPlayerExact(inn), Material.COMPASS);
+					        }
+							Stash.removeMaterial(p, Material.COMPASS);
+						} else {
+							updateCompasses();
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	private void updateCompasses() {
+		for (String s : innocents) {
+        	Player inn = Bukkit.getPlayerExact(s);
+        	inn.setCompassTarget(getNearestBow(inn));
+        }
+	}
+	
+	private Location getNearestBow(Player p) {
+		if(droppedBows.size()==1) {
+			return droppedBows.get(0).getLocation();
+		}
+		else if(droppedBows.size()>1) {
+			double minDist = -1;
+			Location bestLocation = null;
+			for (int i = 0; i < droppedBows.size(); i++) {
+				Location currentLocation = droppedBows.get(i).getLocation();
+				double currentDist = p.getLocation().distance(currentLocation);
+				if(minDist==-1 || currentDist < minDist) {
+					minDist = currentDist;
+					bestLocation = currentLocation;
+				}
+			}
+			return bestLocation;
 		}
 		return null;
 	}
