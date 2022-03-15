@@ -108,8 +108,16 @@ public class Stash {
 
 	public static void addItemStack(Player p, ItemStack ItemStack, int slot) {
 		if(!p.getInventory().contains(ItemStack)) {
-			if(p.getInventory().getItem(slot) == null) p.getInventory().setItem(slot, ItemStack);
-			else p.getInventory().addItem(ItemStack);
+			if(p.getInventory().getItem(slot) == null) {
+				p.getInventory().setItem(slot, ItemStack);
+			}
+			else if(p.getInventory().getItem(slot).isSimilar(ItemStack)) {
+				ItemStack.setAmount(ItemStack.getAmount()+p.getInventory().getItem(slot).getAmount());
+				p.getInventory().setItem(slot, ItemStack); // what about enchantments atc.?
+			}
+			else {
+				p.getInventory().addItem(ItemStack);
+			}
 		}
 	}
 

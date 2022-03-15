@@ -23,9 +23,11 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.EulerAngle;
@@ -61,10 +63,10 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 	public int distanceToBowToPickUp = 1;
 	public BukkitTask repeatingTask;
 	int goldCurrentlySpawned = 0; // can spawn twice in one place, but its's currently a feature
-	public int murderMysteryMaxGoldSpawned = 15;
-	public int bowDoesWhatPartOfMurderersHp = 1; // 1 - full, 2 - half
+	public int murderMysteryMaxGoldSpawned = 0; // auto
+	public int bowDoesWhatPartOfMurderersHp = 1; // auto (1 - full, 2 - half)
 	public int swordDoesWhatPartOfMurderersHp = 2;
-	public int goldSpawnChancePerSecond = 3; // 1 - 50% chance, 2 - 33% chance
+	public int goldSpawnChancePerSecond = 1; // 1 - 50% chance, 2 - 33% chance           3
 	public int goldSkipSeconds = 1;
 	private int skipTimer = 0;
 	
@@ -235,6 +237,8 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 		l.setWorld(world);
 		p.teleport(l);
 		
+		spawnBow(p, deathLocation);
+		
 		murderers.remove(p.getName());
 		detectives.remove(p.getName());
 		innocents.remove(p.getName());
@@ -248,8 +252,6 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 				p.setHealth(20.0);
 			}
 		}, 1);
-		
-		spawnBow(p, deathLocation);
 	}
 	
 	private void spawnBloodParticles(Location loc) {
@@ -285,31 +287,48 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 						damager = (Player) arrow.getShooter();
 					}
 				}
+				if(victim!=null && victim.getGameMode()!=GameMode.CREATIVE) {
+					if(murderers.contains(damager.getName())) {
+						if(hasItemInSomeHand(damager, Material.IRON_SWORD) || arrow!=null) {
+							doDamageFromMurderer(damager, victim, e);
+						}
+					}
+					else if(detectives.contains(damager.getName())) {
+						if(arrow!=null) {
+							doDamageFromNonMurderer(damager, victim, e);
+						}
+					}
+					else if(heroes.contains(damager.getName())) {
+						if(arrow!=null) {
+							doDamageFromNonMurderer(damager, victim, e);
+						}
+					}
+					else if(innocents.contains(damager.getName())) {
+						if(arrow!=null) {
+							doDamageFromNonMurderer(damager, victim, e);
+						}
+					}
+					else {
+						e.setCancelled(true);
+					}
+				}
+				if(arrow!=null && !damager.isDead()) {
+					Stash.addItemStack(damager, new ItemStack(Material.ARROW, 1), 9);
+				}
 			}
-			if(victim!=null && victim.getGameMode()!=GameMode.CREATIVE) {
-				if(murderers.contains(damager.getName())) {
-					if(hasItemInSomeHand(damager, Material.IRON_SWORD) || arrow!=null) {
-						doDamageFromMurderer(damager, victim, e);
-					}
-				}
-				else if(detectives.contains(damager.getName())) {
-					if(arrow!=null) {
-						doDamageFromNonMurderer(damager, victim, e);
-					}
-				}
-				else if(heroes.contains(damager.getName())) {
-					if(arrow!=null) {
-						doDamageFromNonMurderer(damager, victim, e);
-					}
-				}
-				else if(innocents.contains(damager.getName())) {
-					if(arrow!=null) {
-						doDamageFromNonMurderer(damager, victim, e);
-					}
-				}
+			else if(e.getEntity() instanceof ArmorStand) {
+				e.setCancelled(true); // enough?
 			}
-			if(arrow!=null && !damager.isDead()) {
-				Stash.addItemStack(damager, new ItemStack(Material.ARROW, 1), 9);
+		}
+	}
+	
+	@EventHandler
+	public void DisableArmorStandIntaraction (PlayerInteractAtEntityEvent e) {
+		if(e.getPlayer().getWorld().equals(world)) {
+			if(e.getRightClicked() instanceof ArmorStand) {
+//				if(e.getPlayer().getGameMode().equals(GameMode.ADVENTURE) || e.getPlayer().getGameMode().equals(GameMode.SURVIVAL)) {
+				e.setCancelled(true);
+//				}
 			}
 		}
 	}
@@ -342,8 +361,7 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 							message+= "All murderers died!"; // the??
 							bottomMesage = "All murderers died!";
 						}
-						p.sendMessage(ChatColor.GRAY + message);
-						
+						//p.sendMessage(ChatColor.GRAY + message);
 						p.sendTitle(ChatColor.GREEN + "YOU WON!", ChatColor.GRAY + bottomMesage, 2, 100, 10);
 					}
 					else {
@@ -353,7 +371,7 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 							message+= "All murderers died!";
 							bottomMesage = "All murderers died!";
 						}
-						p.sendMessage(ChatColor.GRAY + message);
+						//p.sendMessage(ChatColor.GRAY + message);
 						p.sendTitle(ChatColor.RED + "YOU LOST!", ChatColor.GRAY + bottomMesage, 2, 100, 10);
 					}
 				}
@@ -373,15 +391,14 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 						} else {
 							message+= "The murderer didn't kill everyone in time!";
 						}
-						p.sendMessage(ChatColor.GRAY + message);
-						
+						//p.sendMessage(ChatColor.GRAY + message);
 						p.sendTitle(ChatColor.GREEN + "YOU WON!", ChatColor.GRAY + bottomMesage, 2, 100, 10);
 					}
 					else {
 						String message = ChatColor.RED + "You lost!";
 						String bottomMesage = "You ran out of time!";
 						message+="You didn't kill everyone in time.";
-						p.sendMessage(ChatColor.GRAY + message);
+						//p.sendMessage(ChatColor.GRAY + message);
 						p.sendTitle(ChatColor.RED + "YOU LOST!", ChatColor.GRAY + bottomMesage, 2, 100, 10);
 					}
 				}
@@ -391,7 +408,7 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 		}
 		else if(detectives.size()==0 && innocents.size()==0 && heroes.size()==0) { // murderers win
 			//String message = ChatColor.GREEN + "You won! You have successfully killed everyone!";
-			actualPlayers.forEach(pN -> {
+			gm.players.forEach(pN -> {
 				Player p = Bukkit.getPlayerExact(pN);
 				if(p!=null) {
 					if(savedMurderers.contains(pN)) {
@@ -403,7 +420,7 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 						} else {
 							message += "You have successfully killed everyone!";
 						}
-						p.sendMessage(ChatColor.GRAY + message);
+						//p.sendMessage(ChatColor.GRAY + message);
 						p.sendTitle(ChatColor.GREEN + "YOU WON!", ChatColor.GRAY + bottomMesage, 2, 100, 10);
 					}
 					else {
@@ -413,7 +430,7 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 							message+= "The murderers have killed everyone!";
 							bottomMesage = "The murderers have killed everyone!";
 						}
-						p.sendMessage(ChatColor.GRAY + message);
+						//p.sendMessage(ChatColor.GRAY + message);
 						p.sendTitle(ChatColor.RED + "YOU LOST!", ChatColor.GRAY + bottomMesage, 2, 100, 10);
 					}
 				}
@@ -426,8 +443,10 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 	@SuppressWarnings("deprecation")
 	private void spawnBow(Player p, Location loc) {
 		if(!detectives.contains(p.getName()) && !heroes.contains(p.getName())) {
+			SimpleLogger.debug("no detective");
 			return;
 		}
+		SimpleLogger.debug("detective");
 		loc = loc.getBlock().getLocation(); // is that a copy already or bit, but doesn't matter already actually
 		loc.setX(loc.getX()+0.5);
 		loc.setZ(loc.getZ()+0.5);
@@ -459,10 +478,10 @@ public class ExtraMurderMysteryData implements ExtraGameData {
         		public void run() {
         			if(gameFinished || stand==null) {
         				SimpleLogger.log("stand got null value");
-        				cancel();
         				if(stand!=null && !stand.isDead()) {
         					stand.remove();
         				}
+        				cancel();
         			}
         			++tick;
         			Location loc = getLocationAroundCircle(center, radius, radPerTick * tick);
@@ -610,15 +629,14 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 	
 	private void spawnGoldIfNeeded() {
 		if(skipTimer==goldSkipSeconds) {
-			if(goldCurrentlySpawned<murderMysteryMaxGoldSpawned) {
+			if(goldCurrentlySpawned<=murderMysteryMaxGoldSpawned) {
 				int r = rand.nextInt(goldSpawnChancePerSecond);
 				if(r==0) {
 					ArrayList<Location> locs = MurderMysteryLocations.goldSpawnLocations.get(gm.map);
 					int number = rand.nextInt(locs.size());
 					Location l = locs.get(number);
 					l.setWorld(world);
-					ItemStack is = new ItemStack(Material.GOLD_INGOT);
-					is.getItemMeta().setDisplayName(NamesAndLines.goldIngotName);
+					ItemStack is = getSpecialGoldItemStack();
 					world.dropItemNaturally(l, is);
 					goldCurrentlySpawned++;
 				}
@@ -628,25 +646,77 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 		skipTimer++; // skips first time too, maybe ballance that
 	}
 	
+	private ItemStack getSpecialGoldItemStack() {
+		ItemStack is = new ItemStack(Material.GOLD_INGOT);
+		ItemMeta meta = is.getItemMeta();
+		meta.setDisplayName(NamesAndLines.goldIngotName);
+		is.setItemMeta(meta);
+		return is;
+	}
+	
 	private void checkIfTimeIsUp() {
 		checkIfItsAWin();
+	}
+	
+	private boolean isItemStackTheGold(ItemStack itemStack) {
+		if(itemStack==null) {
+			return false;
+		}
+		if(itemStack.getType()==Material.GOLD_INGOT) {
+			if(itemStack.getItemMeta().getDisplayName().equals(NamesAndLines.goldIngotName)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	@EventHandler public void onItemPickup(EntityPickupItemEvent e) {
 		if(e.getEntity() instanceof Player) {
 			if(e.getEntity().getWorld().equals(world)) {
 				Player p = (Player) e.getEntity();
-				ItemStack item = e.getItem().getItemStack();
-				if(item.getType()==Material.GOLD_INGOT) {
-					if(item.getItemMeta().getDisplayName().equals(NamesAndLines.goldIngotName)) {
+				if(murderers.contains(p.getName()) || innocents.contains(p.getName())) {
+					ItemStack item = e.getItem().getItemStack();
+					if(isItemStackTheGold(item)) {
 						SimpleLogger.debug(item.getAmount());
-//						p.getInventory().remove(item);
 						goldCurrentlySpawned--;
-						// do stuff
+						SimpleLogger.debug("goldCurrentlySpawned " + goldCurrentlySpawned);
+						int hasGold = 0;
+						for (int i = 0; i < p.getInventory().getSize(); i++) {
+							ItemStack itemStack = p.getInventory().getItem(i);
+							if(isItemStackTheGold(itemStack)) {
+								hasGold += itemStack.getAmount();
+							}
+						}
+						hasGold++; // just picked up
+						SimpleLogger.debug("hasGold " + hasGold);
+						if(hasGold>=10) {
+							if(!p.getInventory().contains(Material.BOW)) {
+								Stash.addItemStack(p, new ItemStack(Material.BOW, 1), 0);
+							}
+							int getsArrows = hasGold/10; // 10 can be customisable
+							SimpleLogger.debug("getsArrows " + getsArrows);
+							int hasArrows = 0;
+							for (int i = 0; i < p.getInventory().getSize(); i++) {
+								ItemStack itemStack = p.getInventory().getItem(i);
+								if(itemStack!=null && itemStack.getType()==Material.ARROW) {
+									hasArrows += itemStack.getAmount();
+								}
+							}
+							SimpleLogger.debug("hasArrows " + hasArrows);
+							Stash.addItemStack(p, new ItemStack(Material.ARROW, hasArrows + getsArrows), 8);
+							Stash.removeMaterial(p, Material.GOLD_INGOT);
+							ItemStack is = getSpecialGoldItemStack();
+							is.setAmount(hasGold%10);
+							Stash.addItemStack(p, is, 0);
+						}
 					}
 				}
 			}
 		}
+	}
+	
+	public static void main(String[] args) {
+		//test
 	}
 	
 	private void onGameEnd() {
@@ -675,13 +745,13 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 	private void ballanceMechanics() {
 		// gold
 		if(actualPlayers.size() < 5) {
-			murderMysteryMaxGoldSpawned = 5;
+			murderMysteryMaxGoldSpawned = 12;
 		} else if(actualPlayers.size() < 10) {
-			murderMysteryMaxGoldSpawned = 10;
+			murderMysteryMaxGoldSpawned = 25;
 		} else if(actualPlayers.size() < 15) {
-			murderMysteryMaxGoldSpawned = 15;
+			murderMysteryMaxGoldSpawned = 40;
 		} else {
-			murderMysteryMaxGoldSpawned = 20;
+			murderMysteryMaxGoldSpawned = 70;
 		}
 		
 		// murderer's hp
