@@ -24,7 +24,7 @@ public class GameManager {
 	public Minigame minigameType = null;
 	public String map = "default"; // DON'T USE "default" AS THE NAME LATER
 	public ArrayList<String> players = new ArrayList<>();
-	public ArrayList<String> actualPlayers = new ArrayList<>();
+	public ArrayList<String> otherSpectators = new ArrayList<>();
 	public String worldName = null;
 	public ExtraGameData extraGameData;
 	public TeamManager tm;
@@ -38,9 +38,6 @@ public class GameManager {
 		prepareWorld();
 		if(worldName == null) {
 			return -1;
-		}
-		for (String s : players) {
-			actualPlayers.add(s);
 		}
 		Bukkit.getPluginManager().registerEvents(extraGameData, References.plugin);
 		String result = extraGameData.start();

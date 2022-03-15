@@ -32,7 +32,7 @@ import org.greenem.plugins.Server.util.SimpleLogger;
 public class ExtraMurderMysteryData implements ExtraGameData {
 	public GameManager gm;
 	
-	ArrayList<String> actualPlayers;
+	ArrayList<String> actualPlayers = new ArrayList<>();
 	
 	Random rand = new Random();
 	public int fullTime = -1;
@@ -54,9 +54,13 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 		if(amountOfMurderers+amountOfDetectives > gm.players.size()) {
 			return ChatColor.RED + "You don't have enough players for " + amountOfMurderers + " murderers and " + amountOfDetectives + " detectives!";
 		}
-		actualPlayers = gm.actualPlayers;
+		for (String s : gm.players) {
+			actualPlayers.add(s);
+		}
 		for (String s : actualPlayers) {
-			Preparations.preparePlayerForMinigame(Bukkit.getPlayerExact(s), gm.minigameType, true);
+			if(Bukkit.getPlayerExact(s)!=null) {
+				Preparations.preparePlayerForMinigame(Bukkit.getPlayerExact(s), gm.minigameType, true);
+			}
 		}
 		teleportEveryone();
 		randomizeRoles();
@@ -67,15 +71,17 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 	
 	private void teleportEveryone() {
 		ArrayList<Location> allLocs = MurderMysteryLocations.gameStartSpawnLocations.get(gm.map);
-		for (String pName : gm.actualPlayers) {
-			int spawnLocNum = rand.nextInt(allLocs.size());
-			float rotation = rand.nextFloat(-180, 180);
-			Location loc = allLocs.get(spawnLocNum).clone().add(0.5, 0, 0.5);
-			loc.setYaw(rotation);
-			world = Bukkit.getWorld(gm.worldName);
-			loc.setWorld(world);
-			Bukkit.getPlayerExact(pName).teleport(loc);
-			loc.getWorld().setTime(MinigamesStaticData.getTimeForMap(gm.minigameType, gm.map));
+		for (String pName : actualPlayers) {
+			if(Bukkit.getPlayerExact(pName)!=null) {
+				int spawnLocNum = rand.nextInt(allLocs.size());
+				float rotation = rand.nextFloat(-180, 180);
+				Location loc = allLocs.get(spawnLocNum).clone().add(0.5, 0, 0.5);
+				loc.setYaw(rotation);
+				world = Bukkit.getWorld(gm.worldName);
+				loc.setWorld(world);
+				Bukkit.getPlayerExact(pName).teleport(loc);
+				loc.getWorld().setTime(MinigamesStaticData.getTimeForMap(gm.minigameType, gm.map));
+			}
 		}
 	}
 	
@@ -110,19 +116,21 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 	private void announceRoles() {
 		for (String s : actualPlayers) {
 			Player p = Bukkit.getPlayerExact(s);
-			if(murderers.contains(p.getName())) {
-				p.sendTitle(ChatColor.GRAY + "" + ChatColor.BOLD + "" + ChatColor.ITALIC + "You are a " + ChatColor.RED + "MURDERER", "", 5, 30, 10);
-				p.getInventory().setHeldItemSlot(4);
-				Stash.addItemStack(p, new ItemStack(Material.IRON_SWORD, 1), 0);
-			}
-			else if(detectives.contains(p.getName())) {
-				p.sendTitle(ChatColor.GRAY + "" + ChatColor.BOLD + "" + ChatColor.ITALIC + "You are a " + ChatColor.YELLOW + "DETECTIVE", "", 5, 30, 10);
-				p.getInventory().setHeldItemSlot(4);
-				Stash.addItemStack(p, new ItemStack(Material.BOW, 1), 0);
-				Stash.addItemStack(p, new ItemStack(Material.ARROW, 1), 9);
-			}
-			else if(innocents.contains(p.getName())) {
-				p.sendTitle(ChatColor.GRAY + "" + ChatColor.BOLD + "" + ChatColor.ITALIC + "You are a " + ChatColor.GREEN + "INNOCENT", "", 5, 30, 10);
+			if(p!=null) {
+				if(murderers.contains(p.getName())) {
+					p.sendTitle(ChatColor.GRAY + "" + ChatColor.BOLD + "" + ChatColor.ITALIC + "You are a " + ChatColor.RED + "MURDERER", "", 5, 30, 10);
+					p.getInventory().setHeldItemSlot(4);
+					Stash.addItemStack(p, new ItemStack(Material.IRON_SWORD, 1), 0);
+				}
+				else if(detectives.contains(p.getName())) {
+					p.sendTitle(ChatColor.GRAY + "" + ChatColor.BOLD + "" + ChatColor.ITALIC + "You are a " + ChatColor.YELLOW + "DETECTIVE", "", 5, 30, 10);
+					p.getInventory().setHeldItemSlot(4);
+					Stash.addItemStack(p, new ItemStack(Material.BOW, 1), 0);
+					Stash.addItemStack(p, new ItemStack(Material.ARROW, 1), 9);
+				}
+				else if(innocents.contains(p.getName())) {
+					p.sendTitle(ChatColor.GRAY + "" + ChatColor.BOLD + "" + ChatColor.ITALIC + "You are a " + ChatColor.GREEN + "INNOCENT", "", 5, 30, 10);
+				}
 			}
 		}
 	}
@@ -197,7 +205,6 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 		innocents.remove(p.getName());
 		heroes.remove(p.getName());
 		actualPlayers.remove(p.getName());
-		gm.actualPlayers.remove(p.getName()); // bad
 		checkIfItsAWin();
 		
 		Bukkit.getScheduler().scheduleSyncDelayedTask(References.plugin, new Runnable() {
@@ -272,21 +279,64 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 	
 	private void checkIfItsAWin() {
 		if(murderers.size()==0) {
-			String message = "You won! All murderers died!";
-			actualPlayers.forEach(pN -> {
+			gm.players.forEach(pN -> {
 				Player p = Bukkit.getPlayerExact(pN);
-				p.sendMessage(message);
-				p.sendTitle(ChatColor.GREEN + "YOU WON!", ChatColor.GRAY + "All murderers died!", 2, 40, 10);
+				if(p!=null) {
+					if(!murderers.contains(pN)) {
+						String message = ChatColor.GREEN + "You won!";
+						String bottomMesage = "The murderer died!";
+						if(amountOfMurderers>1) {
+							message+= "All murderers died!"; // the??
+							bottomMesage = "All murderers died!";
+						}
+						p.sendMessage(message);
+						
+						p.sendTitle(ChatColor.GREEN + "YOU WON!", ChatColor.GRAY + bottomMesage, 2, 100, 10);
+					}
+					else {
+						String message = ChatColor.RED + "You lost!";
+						String bottomMesage = "You died!";
+						if(amountOfMurderers>1) {
+							message+= "All murderers died!";
+							bottomMesage = "All murderers died!";
+						}
+						p.sendMessage(message);
+						p.sendTitle(ChatColor.RED + "YOU LOST!", ChatColor.GRAY + bottomMesage, 2, 100, 10);
+					}
+				}
 			});
 			gameFinished = true;
 		}
 		
 		if(detectives.size()==0 && innocents.size()==0 && heroes.size()==0) {
-			String message = "You won! You have successfully killed everyone!";
+			//String message = ChatColor.GREEN + "You won! You have successfully killed everyone!";
 			actualPlayers.forEach(pN -> {
 				Player p = Bukkit.getPlayerExact(pN);
-				p.sendMessage(message);
-				p.sendTitle(ChatColor.GREEN + "YOU WON!", ChatColor.GRAY + "All murderers died!", 2, 40, 10);
+				if(p!=null) {
+					if(murderers.contains(pN)) {
+						String message = ChatColor.GREEN + "You won!";
+						String bottomMesage = "The murderer died!";
+						if(amountOfMurderers>1) {
+							message+= "You and other murderers have successfully killed everyone!";
+							bottomMesage = "You have killed everyone!";
+						} else {
+							message += "You have successfully killed everyone!";
+						}
+						p.sendMessage(message);
+						
+						p.sendTitle(ChatColor.GREEN + "YOU WON!", ChatColor.GRAY + bottomMesage, 2, 100, 10);
+					}
+					else {
+						String message = ChatColor.RED + "You lost!";
+						String bottomMesage = "The murderer has killed everyone!";
+						if(amountOfMurderers>1) {
+							message+= "The murderers have killed everyone!";
+							bottomMesage = "The murderers have killed everyone!";
+						}
+						p.sendMessage(message);
+						p.sendTitle(ChatColor.RED + "YOU LOST!", ChatColor.GRAY + bottomMesage, 2, 100, 10);
+					}
+				}
 			});
 			gameFinished = true;
 		}
@@ -314,7 +364,9 @@ public class ExtraMurderMysteryData implements ExtraGameData {
         ItemStack compass = new ItemStack(Material.COMPASS, 1);
 		for (String s : innocents) {
         	Player inn = Bukkit.getPlayerExact(s);
-        	Stash.addItemStack(inn, compass, 4);
+        	if(inn!=null) {
+        		Stash.addItemStack(inn, compass, 4);
+        	}
         }
         updateCompasses();
         final Location center = loc;
@@ -368,7 +420,9 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 						Stash.addItemStack(p, new ItemStack(Material.ARROW, 1), 9);
 						if(droppedBows.size()==0) {
 							for (String inn : innocents) {
-								Stash.removeMaterial(Bukkit.getPlayerExact(inn), Material.COMPASS);
+								if(Bukkit.getPlayerExact(inn)!=null) {
+									Stash.removeMaterial(Bukkit.getPlayerExact(inn), Material.COMPASS);
+								}
 					        }
 							Stash.removeMaterial(p, Material.COMPASS);
 						} else {
@@ -383,7 +437,9 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 	private void updateCompasses() {
 		for (String s : innocents) {
         	Player inn = Bukkit.getPlayerExact(s);
-        	inn.setCompassTarget(getNearestBow(inn));
+        	if(inn!=null) {
+        		inn.setCompassTarget(getNearestBow(inn));
+        	}
         }
 	}
 	
