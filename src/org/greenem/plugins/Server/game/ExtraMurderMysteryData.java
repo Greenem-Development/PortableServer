@@ -45,6 +45,7 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 	public ArrayList<String> detectives = new ArrayList<>();
 	public ArrayList<String> innocents = new ArrayList<>();
 	public ArrayList<String> heroes = new ArrayList<>();
+	public ArrayList<String> savedMurderers = new ArrayList<>();
 	public World world;
 	public boolean gameFinished = false;
 	public ArrayList<ArmorStand> droppedBows = new ArrayList<>();
@@ -86,6 +87,7 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	private void randomizeRoles() {
 		@SuppressWarnings("unchecked")
 		ArrayList<String> playersNeedRole = (ArrayList<String>) actualPlayers.clone();
@@ -112,6 +114,7 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 				playersNeedRole.remove(i);
 			}
 		}
+		savedMurderers = (ArrayList<String>) murderers.clone();
 	}
 	
 	private void announceRoles() {
@@ -146,31 +149,39 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 	}
 	
 	@SuppressWarnings("deprecation")
-	private void damageMurderer(Player p, int minusMaxDevideByWhat, String message) {
-		if(p.getHealth()-p.getMaxHealth()/minusMaxDevideByWhat>0.1) {
-			new BukkitRunnable() { // can have multihit tick problems, think about it later
+	private void damageMurderer(Player p, int minusMaxDevideByWhat, String message, EntityDamageByEntityEvent e) {
+		double current = p.getHealth();
+		if(current-p.getMaxHealth()/minusMaxDevideByWhat>0.1) {
+			/*new BukkitRunnable() { // can have multihit tick problems, think about it later
 				@Override
 				public void run() {
 					SimpleLogger.debug("-health");
-					p.setHealth(p.getHealth()-p.getMaxHealth()/minusMaxDevideByWhat);
+					if(p.getHealth()-p.getMaxHealth()/minusMaxDevideByWhat>0.1) {
+						p.setHealth(current-p.getMaxHealth()/minusMaxDevideByWhat);
+					}
+					else {
+//						killPlayer(p, message);
+					}
 				}
 			}.runTaskLater(References.plugin, 2);
+			p.setHealth(current-p.getMaxHealth()/minusMaxDevideByWhat);*/
+			e.setDamage(p.getMaxHealth()/minusMaxDevideByWhat);
 		}
 		else {
 			killPlayer(p, message);
 		}
 	}
 	
-	private void doDamageFromMurderer(Player m, Player o) {
+	private void doDamageFromMurderer(Player m, Player o, EntityDamageByEntityEvent e) {
 		// some config ballance stuff here
 		if(murderers.contains(o.getName())) {
 			// more ballance here
 			int swordDoesWhatPartOfMurdererHp = 2; // half
 			String killedAMurderer = "You have killed another murderer!";
-			damageMurderer(m, swordDoesWhatPartOfMurdererHp, killedAMurderer); // maybe they should be different
-			damageMurderer(o, swordDoesWhatPartOfMurdererHp, "You were killed by another murderer"); // "for some reason"
+			damageMurderer(m, swordDoesWhatPartOfMurdererHp, killedAMurderer, e); // maybe they should be different
+			damageMurderer(o, swordDoesWhatPartOfMurdererHp, "You were killed by another murderer", e); // "for some reason"
 			if(!actualPlayers.contains(o.getName())) { // if victim nurderer died, but not the damager (he was at higher hp before)
-				damageMurderer(m, 1, killedAMurderer);
+				damageMurderer(m, 1, killedAMurderer, e);
 			}
 		}
 		else {
@@ -178,14 +189,15 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 		}
 	}
 	
-	private void doDamageFromNonMurderer(Player m, Player o) {
+	private void doDamageFromNonMurderer(Player m, Player o, EntityDamageByEntityEvent e) {
 		// some config ballance stuff here
 		SimpleLogger.log("doDamageFromNonMurderer");
 		if(murderers.contains(o.getName())) {
 			// also ballance here
 			int bowDoesWhatPartOfMurdererHp = 2; // half
 			SimpleLogger.log("doDamageFromNonMurderer murderer");
-			damageMurderer(o, bowDoesWhatPartOfMurdererHp, "You were killed"); // maybe shot info
+			String message = "You were killed";
+			damageMurderer(o, bowDoesWhatPartOfMurdererHp, message, e); // maybe shot info
 		}
 		else {
 			killPlayer(o, NamesAndLines.MmMessageKilledByUnknownPlayer);
@@ -196,7 +208,6 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 	private void killPlayer(Player p, String message) {
 		Location deathLocation = p.getLocation().clone();
 		p.sendTitle(ChatColor.ITALIC + "" + ChatColor.BOLD + "" + ChatColor.DARK_RED + "YOU DIED", ChatColor.ITALIC + "" + ChatColor.GRAY + message, 5, 40, 30);
-		p.sendMessage(message);
 		spawnBloodParticles(p.getLocation());
 		Preparations.turnVanishOn(p);
 		Preparations.removeAllMaterialsAfterDeath(p, gm.minigameType);
@@ -262,22 +273,22 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 			if(victim!=null && victim.getGameMode()!=GameMode.CREATIVE) {
 				if(murderers.contains(damager.getName())) {
 					if(hasItemInSomeHand(damager, Material.IRON_SWORD) || arrow!=null) {
-						doDamageFromMurderer(damager, victim);
+						doDamageFromMurderer(damager, victim, e);
 					}
 				}
 				else if(detectives.contains(damager.getName())) {
 					if(arrow!=null) {
-						doDamageFromNonMurderer(damager, victim);
+						doDamageFromNonMurderer(damager, victim, e);
 					}
 				}
 				else if(heroes.contains(damager.getName())) {
 					if(arrow!=null) {
-						doDamageFromNonMurderer(damager, victim);
+						doDamageFromNonMurderer(damager, victim, e);
 					}
 				}
 				else if(innocents.contains(damager.getName())) {
 					if(arrow!=null) {
-						doDamageFromNonMurderer(damager, victim);
+						doDamageFromNonMurderer(damager, victim, e);
 					}
 				}
 			}
@@ -285,18 +296,18 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 	}
 	
 	private void checkIfItsAWin() {
-		if(murderers.size()==0) {
+		if(murderers.size()==0) { // innocents win
 			gm.players.forEach(pN -> {
 				Player p = Bukkit.getPlayerExact(pN);
 				if(p!=null) {
-					if(!murderers.contains(pN)) {
+					if(!savedMurderers.contains(pN)) {
 						String message = ChatColor.GREEN + "You won!";
 						String bottomMesage = "The murderer died!";
 						if(amountOfMurderers>1) {
 							message+= "All murderers died!"; // the??
 							bottomMesage = "All murderers died!";
 						}
-						p.sendMessage(message);
+						p.sendMessage(ChatColor.GRAY + message);
 						
 						p.sendTitle(ChatColor.GREEN + "YOU WON!", ChatColor.GRAY + bottomMesage, 2, 100, 10);
 					}
@@ -307,7 +318,7 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 							message+= "All murderers died!";
 							bottomMesage = "All murderers died!";
 						}
-						p.sendMessage(message);
+						p.sendMessage(ChatColor.GRAY + message);
 						p.sendTitle(ChatColor.RED + "YOU LOST!", ChatColor.GRAY + bottomMesage, 2, 100, 10);
 					}
 				}
@@ -315,12 +326,12 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 			gameFinished = true;
 		}
 		
-		if(detectives.size()==0 && innocents.size()==0 && heroes.size()==0) {
+		if(detectives.size()==0 && innocents.size()==0 && heroes.size()==0) { // murderers win
 			//String message = ChatColor.GREEN + "You won! You have successfully killed everyone!";
 			actualPlayers.forEach(pN -> {
 				Player p = Bukkit.getPlayerExact(pN);
 				if(p!=null) {
-					if(murderers.contains(pN)) {
+					if(savedMurderers.contains(pN)) {
 						String message = ChatColor.GREEN + "You won!";
 						String bottomMesage = "The murderer died!";
 						if(amountOfMurderers>1) {
@@ -329,8 +340,7 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 						} else {
 							message += "You have successfully killed everyone!";
 						}
-						p.sendMessage(message);
-						
+						p.sendMessage(ChatColor.GRAY + message);
 						p.sendTitle(ChatColor.GREEN + "YOU WON!", ChatColor.GRAY + bottomMesage, 2, 100, 10);
 					}
 					else {
@@ -340,7 +350,7 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 							message+= "The murderers have killed everyone!";
 							bottomMesage = "The murderers have killed everyone!";
 						}
-						p.sendMessage(message);
+						p.sendMessage(ChatColor.GRAY + message);
 						p.sendTitle(ChatColor.RED + "YOU LOST!", ChatColor.GRAY + bottomMesage, 2, 100, 10);
 					}
 				}
