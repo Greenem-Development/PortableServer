@@ -1,7 +1,6 @@
 package org.greenem.plugins.Server.minigames.murderMystery;
 
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.Random;
 
 import org.bukkit.Bukkit;
@@ -16,7 +15,6 @@ import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -25,7 +23,6 @@ import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -72,6 +69,7 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 	private int skipTimer = 0;
 	private ArrayList<Location> localGoldSpawnLocations = MurderMysteryLocations.goldSpawnLocations.get(gm.map);
 	private ArrayList<Integer> GoldSpawnLocationsIndexesAlreayUsed = new ArrayList<>();
+	private float goldPickupDeleteFromUsedThreshold = 3f;
 	
 	@Override
 	public String start() {
@@ -761,6 +759,11 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 							ItemStack is = getSpecialGoldItemStack();
 							is.setAmount(hasGold%10);
 							Stash.addItemStack(p, is, 0);
+						}
+					}
+					for (Integer i : GoldSpawnLocationsIndexesAlreayUsed) {
+						if(localGoldSpawnLocations.get(i).distance(p.getLocation()) < goldPickupDeleteFromUsedThreshold) {
+							GoldSpawnLocationsIndexesAlreayUsed.remove(i);
 						}
 					}
 				}
