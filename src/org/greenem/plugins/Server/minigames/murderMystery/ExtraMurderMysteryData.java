@@ -15,12 +15,14 @@ import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemFlag;
@@ -28,6 +30,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
 import org.greenem.plugins.Server.data.MinigamesStaticData;
@@ -67,12 +71,15 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 	public int goldSpawnChancePerSecond = 1; // 1 - 50% chance, 2 - 33% chance           3
 	public int goldSkipSeconds = 1;
 	private int skipTimer = 0;
-	private ArrayList<Location> localGoldSpawnLocations = MurderMysteryLocations.goldSpawnLocations.get(gm.map);
+	private ArrayList<Location> localGoldSpawnLocations = null;
 	private ArrayList<Integer> GoldSpawnLocationsIndexesAlreayUsed = new ArrayList<>();
-	private float goldPickupDeleteFromUsedThreshold = 3f;
+	private ArrayList<SpawnedGold> GoldSpawnExistingItems = new ArrayList<>();
+	private float goldPickupDeleteFromUsedThreshold = 1.5f;
+	public Scoreboard mainScoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
 	
 	@Override
 	public String start() {
+		localGoldSpawnLocations = MurderMysteryLocations.goldSpawnLocations.get(gm.map);
 		if(amountOfMurderers+amountOfDetectives > gm.players.size()) {
 			return ChatColor.RED + "You don't have enough players for " + amountOfMurderers + " murderers and " + amountOfDetectives + " detectives!";
 		}
@@ -84,6 +91,7 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 				Preparations.preparePlayerForMinigame(Bukkit.getPlayerExact(s), gm.minigameType, true);
 			}
 		}
+		hideNicknames();
 		teleportEveryone();
 		randomizeRoles();
 		announceRoles();
@@ -91,6 +99,14 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 		ballanceMechanics();
 		startRepeatingRunnables();
 		return null;
+	}
+	
+	private void hideNicknames() {
+		Team t = mainScoreboard.registerNewTeam("hidenicknames"); // works with _ ?
+	    t.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER);
+		for (String s : actualPlayers) {
+			t.addEntry(s);
+		}
 	}
 	
 	private void teleportEveryone() {
@@ -274,6 +290,10 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 	@EventHandler
 	public void MurderMysterySwordDamage(EntityDamageByEntityEvent e) {
 		if(e.getEntity().getWorld().equals(world)) {
+			if(gameFinished) {
+				e.setCancelled(true);
+				return;
+			}
 			Player victim = null;
 			Player damager = null;
 			Arrow arrow = null;
@@ -289,25 +309,19 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 					}
 				}
 				if(victim!=null && victim.getGameMode()!=GameMode.CREATIVE) {
-					if(murderers.contains(damager.getName())) {
-						if(hasItemInSomeHand(damager, Material.IRON_SWORD) || arrow!=null) {
-							doDamageFromMurderer(damager, victim, e);
-						}
+					if(murderers.contains(damager.getName()) && (hasItemInSomeHand(damager, Material.IRON_SWORD) || arrow!=null)) {
+						doDamageFromMurderer(damager, victim, e);
 					}
-					else if(detectives.contains(damager.getName())) {
+					else if(detectives.contains(damager.getName()) && arrow!=null) {
 						if(arrow!=null) {
 							doDamageFromNonMurderer(damager, victim, e);
 						}
 					}
-					else if(heroes.contains(damager.getName())) {
-						if(arrow!=null) {
-							doDamageFromNonMurderer(damager, victim, e);
-						}
+					else if(heroes.contains(damager.getName()) && arrow!=null) {
+						doDamageFromNonMurderer(damager, victim, e);
 					}
-					else if(innocents.contains(damager.getName())) {
-						if(arrow!=null) {
-							doDamageFromNonMurderer(damager, victim, e);
-						}
+					else if(innocents.contains(damager.getName()) && arrow!=null) {
+						doDamageFromNonMurderer(damager, victim, e);
 					}
 					else {
 						e.setCancelled(true);
@@ -341,9 +355,11 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 				if(e.getEntity() instanceof Arrow) {
 					SimpleLogger.debug(e.getHitEntity());
 					Player p = (Player) e.getEntity().getShooter();
-					if(detectives.contains(p.getName()) || heroes.contains(p.getName())) {
+					if(actualPlayers.contains(p.getName())) {
 						e.getEntity().remove();
-						Stash.addItemStack(p, new ItemStack(Material.ARROW, 1), 9);
+						if(detectives.contains(p.getName()) || heroes.contains(p.getName())) {
+							Stash.addItemStack(p, new ItemStack(Material.ARROW, 1), 9);
+						}
 					}
 				}
 			}
@@ -356,20 +372,20 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 				Player p = Bukkit.getPlayerExact(pN);
 				if(p!=null) {
 					if(!savedMurderers.contains(pN)) {
-						String message = ChatColor.GREEN + "You won!";
+						//String message = ChatColor.GREEN + "You won!";
 						String bottomMesage = "The murderer died!";
 						if(amountOfMurderers>1) {
-							message+= "All murderers died!"; // the??
+							//message+= "All murderers died!"; // the??
 							bottomMesage = "All murderers died!";
 						}
 						//p.sendMessage(ChatColor.GRAY + message);
 						p.sendTitle(ChatColor.GREEN + "YOU WON!", ChatColor.GRAY + bottomMesage, 2, 100, 10);
 					}
 					else {
-						String message = ChatColor.RED + "You lost!";
+						//String message = ChatColor.RED + "You lost!";
 						String bottomMesage = "You died!";
 						if(amountOfMurderers>1) {
-							message+= "All murderers died!";
+							//message+= "All murderers died!";
 							bottomMesage = "All murderers died!";
 						}
 						//p.sendMessage(ChatColor.GRAY + message);
@@ -385,20 +401,20 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 				Player p = Bukkit.getPlayerExact(pN);
 				if(p!=null) {
 					if(!savedMurderers.contains(pN)) {
-						String message = ChatColor.GREEN + "You won!";
+						//String message = ChatColor.GREEN + "You won!";
 						String bottomMesage = "Innocents survived!";
-						if(amountOfMurderers>1) {
+						/*if(amountOfMurderers>1) {
 							message+= "The murderers didn't kill everyone in time!";
 						} else {
 							message+= "The murderer didn't kill everyone in time!";
-						}
+						}*/
 						//p.sendMessage(ChatColor.GRAY + message);
 						p.sendTitle(ChatColor.GREEN + "YOU WON!", ChatColor.GRAY + bottomMesage, 2, 100, 10);
 					}
 					else {
-						String message = ChatColor.RED + "You lost!";
+						//String message = ChatColor.RED + "You lost!";
 						String bottomMesage = "You ran out of time!";
-						message+="You didn't kill everyone in time.";
+						//message+="You didn't kill everyone in time.";
 						//p.sendMessage(ChatColor.GRAY + message);
 						p.sendTitle(ChatColor.RED + "YOU LOST!", ChatColor.GRAY + bottomMesage, 2, 100, 10);
 					}
@@ -413,22 +429,22 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 				Player p = Bukkit.getPlayerExact(pN);
 				if(p!=null) {
 					if(savedMurderers.contains(pN)) {
-						String message = ChatColor.GREEN + "You won!";
-						String bottomMesage = "The murderer died!";
-						if(amountOfMurderers>1) {
+						//String message = ChatColor.GREEN + "You won!";
+						String bottomMesage = "You have killed everyone!";
+						/*if(amountOfMurderers>1) {
 							message+= "You and other murderers have successfully killed everyone!";
 							bottomMesage = "You have killed everyone!";
 						} else {
 							message += "You have successfully killed everyone!";
-						}
+						}*/
 						//p.sendMessage(ChatColor.GRAY + message);
 						p.sendTitle(ChatColor.GREEN + "YOU WON!", ChatColor.GRAY + bottomMesage, 2, 100, 10);
 					}
 					else {
-						String message = ChatColor.RED + "You lost!";
+						//String message = ChatColor.RED + "You lost!";
 						String bottomMesage = "The murderer has killed everyone!";
 						if(amountOfMurderers>1) {
-							message+= "The murderers have killed everyone!";
+							//message+= "The murderers have killed everyone!";
 							bottomMesage = "The murderers have killed everyone!";
 						}
 						//p.sendMessage(ChatColor.GRAY + message);
@@ -633,19 +649,23 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 			if(goldCurrentlySpawned<=murderMysteryMaxGoldSpawned) {
 				int r = rand.nextInt(goldSpawnChancePerSecond);
 				if(r==0) {
-					ArrayList<Location> locs = localGoldSpawnLocations;
 					boolean foundUnused = false;
 					int number = 0;
 					while (!foundUnused) {
-						number = rand.nextInt(locs.size());
+						number = rand.nextInt(localGoldSpawnLocations.size());
 						if(!GoldSpawnLocationsIndexesAlreayUsed.contains(Integer.valueOf(number))) {
 							foundUnused = true;
 						}
 					}
-					Location l = locs.get(number);
+					Location l = localGoldSpawnLocations.get(number);
 					l.setWorld(world);
 					ItemStack is = getSpecialGoldItemStack();
-					world.dropItemNaturally(l, is);
+					Item item = world.dropItemNaturally(l, is);
+					SpawnedGold sg = new SpawnedGold();
+					sg.item = item;
+					sg.location = l;
+					sg.number = number;
+					GoldSpawnExistingItems.add(sg);
 					goldCurrentlySpawned++;
 					GoldSpawnLocationsIndexesAlreayUsed.add(number);
 				}
@@ -741,9 +761,6 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 						hasGold+=itemPickedUp.getAmount(); // just picked up
 						SimpleLogger.debug("hasGold " + hasGold);
 						if(hasGold>=10) {
-							if(!p.getInventory().contains(Material.BOW)) {
-								Stash.addItemStack(p, getNormalBow(), 0);
-							}
 							int getsArrows = hasGold/10; // 10 can be customisable
 							SimpleLogger.debug("getsArrows " + getsArrows);
 							int hasArrows = 0;
@@ -756,18 +773,36 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 							SimpleLogger.debug("hasArrows " + hasArrows);
 							Stash.addItemStack(p, new ItemStack(Material.ARROW, hasArrows + getsArrows), 8);
 							Stash.removeMaterial(p, Material.GOLD_INGOT);
+							if(!p.getInventory().contains(Material.BOW)) {
+								Stash.addItemStack(p, getNormalBow(), 0);
+							}
 							ItemStack is = getSpecialGoldItemStack();
-							is.setAmount(hasGold%10);
-							Stash.addItemStack(p, is, 0);
+							if(hasGold%10!=0) {
+								is.setAmount(hasGold%10);
+								Stash.addItemStack(p, is, 0);
+							}
+							else {
+								Stash.removeMaterial(p, Material.GOLD_INGOT);
+							}
 						}
 					}
-					for (Integer i : GoldSpawnLocationsIndexesAlreayUsed) {
-						if(localGoldSpawnLocations.get(i).distance(p.getLocation()) < goldPickupDeleteFromUsedThreshold) {
-							GoldSpawnLocationsIndexesAlreayUsed.remove(i);
+					for (int i = 0; i < GoldSpawnExistingItems.size(); i++) {
+						if(GoldSpawnExistingItems.get(i).location.distance(e.getItem().getLocation()) < goldPickupDeleteFromUsedThreshold) {
+							SimpleLogger.debug("removing num " + GoldSpawnExistingItems.get(i).number);
+							SimpleLogger.debug("the loc is " + GoldSpawnExistingItems.get(i).location.toString());
+							GoldSpawnLocationsIndexesAlreayUsed.remove(Integer.valueOf(GoldSpawnExistingItems.get(i).number));
+							GoldSpawnExistingItems.remove(i);
 						}
 					}
 				}
 			}
+		}
+	}
+	
+	@EventHandler public void disasbleItemDropping(PlayerDropItemEvent e) {
+		Player p = e.getPlayer();
+		if(p.getWorld().equals(world)) {
+			e.setCancelled(true);
 		}
 	}
 	
