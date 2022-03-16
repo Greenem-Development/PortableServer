@@ -26,6 +26,7 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -69,6 +70,8 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 	public int goldSpawnChancePerSecond = 1; // 1 - 50% chance, 2 - 33% chance           3
 	public int goldSkipSeconds = 1;
 	private int skipTimer = 0;
+	private ArrayList<Location> localGoldSpawnLocations = MurderMysteryLocations.goldSpawnLocations.get(gm.map);
+	private ArrayList<Integer> GoldSpawnLocationsIndexesAlreayUsed = new ArrayList<>();
 	
 	@Override
 	public String start() {
@@ -144,12 +147,12 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 				if(murderers.contains(p.getName())) {
 					p.sendTitle(ChatColor.GRAY + "" + ChatColor.BOLD + "" + ChatColor.ITALIC + "You are a " + ChatColor.RED + "MURDERER", "", 5, 30, 10);
 					p.getInventory().setHeldItemSlot(4);
-					Stash.addItemStack(p, new ItemStack(Material.IRON_SWORD, 1), 0);
+					Stash.addItemStack(p, getMurdererSword(), 0);
 				}
 				else if(detectives.contains(p.getName())) {
 					p.sendTitle(ChatColor.GRAY + "" + ChatColor.BOLD + "" + ChatColor.ITALIC + "You are a " + ChatColor.YELLOW + "DETECTIVE", "", 5, 30, 10);
 					p.getInventory().setHeldItemSlot(4);
-					Stash.addItemStack(p, new ItemStack(Material.BOW, 1), 0);
+					Stash.addItemStack(p, getDetectiveBow(), 0);
 					Stash.addItemStack(p, new ItemStack(Material.ARROW, 1), 9);
 				}
 				else if(innocents.contains(p.getName())) {
@@ -204,7 +207,7 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 			}
 		}
 		else {
-			killPlayer(o, NamesAndLines.MmMessageKilledByUnknownPlayer);
+			killPlayer(o, NamesAndLines.murderMysteryMessageKilledByUnknownPlayer);
 		}
 	}
 	
@@ -218,7 +221,7 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 			damageMurderer(o, bowDoesWhatPartOfMurderersHp, message, e); // maybe shot info
 		}
 		else {
-			killPlayer(o, NamesAndLines.MmMessageKilledByUnknownPlayer);
+			killPlayer(o, NamesAndLines.murderMysteryMessageKilledByUnknownPlayer);
 			String message = "You have killed a wrong player"; 
 			if(m.equals(o)) {
 				message = "You have killed yourself";
@@ -460,7 +463,7 @@ public class ExtraMurderMysteryData implements ExtraGameData {
         stand.setRightArmPose(new EulerAngle(4.69, 0, 0));
         stand.setItemInHand(new ItemStack(Material.BOW));
         droppedBows.add(stand);
-        ItemStack compass = new ItemStack(Material.COMPASS, 1);
+        ItemStack compass = getCompass();
 		for (String s : innocents) {
         	Player inn = Bukkit.getPlayerExact(s);
         	if(inn!=null) {
@@ -515,7 +518,7 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 						ArmorStand stand = droppedBows.get(i);
 						droppedBows.remove(i);
 						stand.remove();
-						Stash.addItemStack(p, new ItemStack(Material.BOW, 1), 0);
+						Stash.addItemStack(p, getDetectiveBow(), 0);
 						Stash.addItemStack(p, new ItemStack(Material.ARROW, 1), 9);
 						if(droppedBows.size()==0) {
 							for (String inn : innocents) {
@@ -632,13 +635,21 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 			if(goldCurrentlySpawned<=murderMysteryMaxGoldSpawned) {
 				int r = rand.nextInt(goldSpawnChancePerSecond);
 				if(r==0) {
-					ArrayList<Location> locs = MurderMysteryLocations.goldSpawnLocations.get(gm.map);
-					int number = rand.nextInt(locs.size());
+					ArrayList<Location> locs = localGoldSpawnLocations;
+					boolean foundUnused = false;
+					int number = 0;
+					while (!foundUnused) {
+						number = rand.nextInt(locs.size());
+						if(!GoldSpawnLocationsIndexesAlreayUsed.contains(Integer.valueOf(number))) {
+							foundUnused = true;
+						}
+					}
 					Location l = locs.get(number);
 					l.setWorld(world);
 					ItemStack is = getSpecialGoldItemStack();
 					world.dropItemNaturally(l, is);
 					goldCurrentlySpawned++;
+					GoldSpawnLocationsIndexesAlreayUsed.add(number);
 				}
 			}
 			skipTimer = 0;
@@ -649,8 +660,50 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 	private ItemStack getSpecialGoldItemStack() {
 		ItemStack is = new ItemStack(Material.GOLD_INGOT);
 		ItemMeta meta = is.getItemMeta();
-		meta.setDisplayName(NamesAndLines.goldIngotName);
+		meta.setDisplayName(NamesAndLines.murderMysteryGoldIngotName);
 		is.setItemMeta(meta);
+		return is;
+	}
+	
+	private ItemStack getNormalBow() {
+		ItemStack is = new ItemStack(Material.BOW);
+		ItemMeta metaExtra = is.getItemMeta();
+		metaExtra.setDisplayName(NamesAndLines.murderMysteryNormalBowName);
+		metaExtra.setUnbreakable(true);
+		metaExtra.addItemFlags(ItemFlag.HIDE_UNBREAKABLE); // is it still nessessary?
+		metaExtra.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+		is.setItemMeta(metaExtra);
+		return is;
+	}
+	
+	private ItemStack getDetectiveBow() {
+		ItemStack is = new ItemStack(Material.BOW);
+		ItemMeta metaExtra = is.getItemMeta();
+		metaExtra.setDisplayName(NamesAndLines.murderMysteryDetectiveBowName);
+		metaExtra.setUnbreakable(true);
+		metaExtra.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
+		metaExtra.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+		is.setItemMeta(metaExtra);
+		return is;
+	}
+	
+	private ItemStack getMurdererSword() {
+		ItemStack is = new ItemStack(Material.IRON_SWORD);
+		ItemMeta metaExtra = is.getItemMeta();
+		metaExtra.setDisplayName(NamesAndLines.murderMysteryMurdererSwordName);
+		metaExtra.setUnbreakable(true);
+		metaExtra.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
+		metaExtra.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+		is.setItemMeta(metaExtra);
+		return is;
+	}
+	
+	private ItemStack getCompass() {
+		ItemStack is = new ItemStack(Material.COMPASS);
+		ItemMeta metaExtra = is.getItemMeta();
+		metaExtra.setDisplayName(NamesAndLines.murderMysteryCompassName);
+		metaExtra.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+		is.setItemMeta(metaExtra);
 		return is;
 	}
 	
@@ -663,7 +716,7 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 			return false;
 		}
 		if(itemStack.getType()==Material.GOLD_INGOT) {
-			if(itemStack.getItemMeta().getDisplayName().equals(NamesAndLines.goldIngotName)) {
+			if(itemStack.getItemMeta().getDisplayName().equals(NamesAndLines.murderMysteryGoldIngotName)) {
 				return true;
 			}
 		}
@@ -675,9 +728,9 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 			if(e.getEntity().getWorld().equals(world)) {
 				Player p = (Player) e.getEntity();
 				if(murderers.contains(p.getName()) || innocents.contains(p.getName())) {
-					ItemStack item = e.getItem().getItemStack();
-					if(isItemStackTheGold(item)) {
-						SimpleLogger.debug(item.getAmount());
+					ItemStack itemPickedUp = e.getItem().getItemStack();
+					if(isItemStackTheGold(itemPickedUp)) {
+						SimpleLogger.debug(itemPickedUp.getAmount());
 						goldCurrentlySpawned--;
 						SimpleLogger.debug("goldCurrentlySpawned " + goldCurrentlySpawned);
 						int hasGold = 0;
@@ -687,11 +740,11 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 								hasGold += itemStack.getAmount();
 							}
 						}
-						hasGold++; // just picked up
+						hasGold+=itemPickedUp.getAmount(); // just picked up
 						SimpleLogger.debug("hasGold " + hasGold);
 						if(hasGold>=10) {
 							if(!p.getInventory().contains(Material.BOW)) {
-								Stash.addItemStack(p, new ItemStack(Material.BOW, 1), 0);
+								Stash.addItemStack(p, getNormalBow(), 0);
 							}
 							int getsArrows = hasGold/10; // 10 can be customisable
 							SimpleLogger.debug("getsArrows " + getsArrows);
@@ -713,10 +766,6 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 				}
 			}
 		}
-	}
-	
-	public static void main(String[] args) {
-		//test
 	}
 	
 	private void onGameEnd() {
