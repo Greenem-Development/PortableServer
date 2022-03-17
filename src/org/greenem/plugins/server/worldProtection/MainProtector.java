@@ -167,6 +167,98 @@ public class MainProtector implements Listener {
 		}
 	}
 	
+	private void cancelPaintingPlayerDamage(HangingBreakByEntityEvent e, World w){
+		ProtectionType pt = ProtectionNames.getProtectionType(w.getName());
+		if(pt==null) return;
+		switch (pt) {
+			case HUB: {
+				e.setCancelled(true);
+				break;
+			}
+			case MURDER_MUSTERY_GAME: {
+				e.setCancelled(true);
+				break;
+			}
+		}
+	}
+	
+	private void cancelBreakingPaintingByArrowFromPlayer(HangingBreakByEntityEvent e, World world) {
+		ProtectionType pt = ProtectionNames.getProtectionType(world.getName());
+		if(pt==null) return;
+		switch (pt) {
+			case HUB: {
+				e.setCancelled(true);
+				break;
+			}
+			case MURDER_MUSTERY_GAME: {
+				e.setCancelled(true);
+				break;
+			}
+		}
+	}
+	
+	private void cancelBreakingPaintingByArrowFromMob(HangingBreakByEntityEvent e, World world) {
+		ProtectionType pt = ProtectionNames.getProtectionType(world.getName());
+		if(pt==null) return;
+		switch (pt) {
+			case HUB: {
+				e.setCancelled(true);
+				break;
+			}
+			case MURDER_MUSTERY_GAME: {
+				e.setCancelled(true);
+				break;
+			}
+		}
+	}
+	
+	private void cancelBreakingItemFrameByArrowFromMob(HangingBreakByEntityEvent e, World world) {
+		ProtectionType pt = ProtectionNames.getProtectionType(world.getName());
+		if(pt==null) return;
+		switch (pt) {
+			case HUB: {
+				e.setCancelled(true);
+				break;
+			}
+			case MURDER_MUSTERY_GAME: {
+				e.setCancelled(true);
+				break;
+			}
+		}
+	}
+	
+	private void cancelBreakingItemFrameByArrowFromPlayer(HangingBreakByEntityEvent e, World world) {
+		ProtectionType pt = ProtectionNames.getProtectionType(world.getName());
+		if(pt==null) return;
+		switch (pt) {
+			case HUB: {
+				e.setCancelled(true);
+				break;
+			}
+			case MURDER_MUSTERY_GAME: {
+				e.setCancelled(true);
+				break;
+			}
+		}
+	}
+	
+	private void cancelItemFramePlayerDamage(HangingBreakByEntityEvent e, World w){
+		ProtectionType pt = ProtectionNames.getProtectionType(w.getName());
+		if(pt==null) return;
+		switch (pt) {
+			case HUB: {
+				e.setCancelled(true);
+				break;
+			}
+			case MURDER_MUSTERY_GAME: {
+				e.setCancelled(true);
+				break;
+			}
+		}
+	}
+	
+	// System stuff
+	
 	@EventHandler
 	public void preventPaintingOrItemFrameDamage (HangingBreakByEntityEvent e) {
 		checkPaintingDamage(e);
@@ -201,52 +293,7 @@ public class MainProtector implements Listener {
 				}
 			}
 			else {
-				cancelBreakingPaintingOrFrameByArrowFromMob(e, e.getEntity().getWorld());
-			}
-		}
-	}
-	
-	private void cancelPaintingPlayerDamage(HangingBreakByEntityEvent e, World w){
-		ProtectionType pt = ProtectionNames.getProtectionType(w.getName());
-		if(pt==null) return;
-		switch (pt) {
-			case HUB: {
-				e.setCancelled(true);
-				break;
-			}
-			case MURDER_MUSTERY_GAME: {
-				e.setCancelled(true);
-				break;
-			}
-		}
-	}
-	
-	private void cancelBreakingPaintingByArrowFromPlayer(HangingBreakByEntityEvent e, World world) {
-		ProtectionType pt = ProtectionNames.getProtectionType(world.getName());
-		if(pt==null) return;
-		switch (pt) {
-			case HUB: {
-				e.setCancelled(true);
-				break;
-			}
-			case MURDER_MUSTERY_GAME: {
-				e.setCancelled(true);
-				break;
-			}
-		}
-	}
-	
-	private void cancelBreakingPaintingOrFrameByArrowFromMob(HangingBreakByEntityEvent e, World world) {
-		ProtectionType pt = ProtectionNames.getProtectionType(world.getName());
-		if(pt==null) return;
-		switch (pt) {
-			case HUB: {
-				e.setCancelled(true);
-				break;
-			}
-			case MURDER_MUSTERY_GAME: {
-				e.setCancelled(true);
-				break;
+				cancelBreakingPaintingByArrowFromMob(e, e.getEntity().getWorld());
 			}
 		}
 	}
@@ -266,35 +313,8 @@ public class MainProtector implements Listener {
 					cancelBreakingItemFrameByArrowFromPlayer(e, p.getWorld());
 				}
 			}
-		}
-	}
-	
-	private void cancelBreakingItemFrameByArrowFromPlayer(HangingBreakByEntityEvent e, World world) {
-		ProtectionType pt = ProtectionNames.getProtectionType(world.getName());
-		if(pt==null) return;
-		switch (pt) {
-			case HUB: {
-				e.setCancelled(true);
-				break;
-			}
-			case MURDER_MUSTERY_GAME: {
-				e.setCancelled(true);
-				break;
-			}
-		}
-	}
-	
-	private void cancelItemFramePlayerDamage(HangingBreakByEntityEvent e, World w){
-		ProtectionType pt = ProtectionNames.getProtectionType(w.getName());
-		if(pt==null) return;
-		switch (pt) {
-			case HUB: {
-				e.setCancelled(true);
-				break;
-			}
-			case MURDER_MUSTERY_GAME: {
-				e.setCancelled(true);
-				break;
+			else {
+				cancelBreakingItemFrameByArrowFromMob(e, e.getEntity().getWorld());
 			}
 		}
 	}
