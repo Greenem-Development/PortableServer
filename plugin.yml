@@ -1,5 +1,5 @@
 name: PortableServer
-main: org.greenem.plugins.Server.main.Main
+main: org.greenem.plugins.server.main.Main
 version: 3.0.0
 api-version: 1.18
 commands:
