@@ -22,7 +22,7 @@ import org.greenem.plugins.server.minigames.murderMystery.MurderMysterySettingsI
 import org.greenem.plugins.server.minigames.murderMystery.MurderMysterySetupSettings;
 import org.greenem.plugins.server.miscellaneous.Stash;
 import org.greenem.plugins.server.miscellaneous.WorldLoadHelper;
-import org.greenem.plugins.server.util.SimpleLogger;
+import static org.greenem.plugins.server.util.SimpleLogger.log;import static org.greenem.plugins.server.util.SimpleLogger.debug;
 
 public class TeamManager implements Listener {
 	public ArrayList<String> players = new ArrayList<>();
@@ -217,7 +217,7 @@ public class TeamManager implements Listener {
 										int newSlot = slot/2;
 										makeNewIndexes(settingsNumbers, newSlot);
 										makeNewIndexes(settingsMaxNumbers, newSlot);
-										SimpleLogger.log(settingsNumbers.toString());
+										log(settingsNumbers.toString());
 										settingsNumbers.set(newSlot, (settingsNumbers.get(newSlot)+1) % settingsMaxNumbers.get(newSlot));
 										updateGui();
 									}
@@ -249,7 +249,7 @@ public class TeamManager implements Listener {
 		int avaliableAmount = 0;
 		int number = 1;
 		while (!foundWorldsEnd) {
-//			SimpleLogger.log("while"); //uncomment if loop
+//			log("while"); //uncomment if loop
 			String worldName = NamesAndLines.getMinigameNameInFolder(selectedMinigame) + "_" + map + "_" + number;
 			if(WorldLoadHelper.worldExists(worldName)) {
 				if(!Worlds.usedWorlds.contains(worldName) && !Worlds.temporaryUnaliableWorlds.contains(worldName)) {

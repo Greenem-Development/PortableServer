@@ -12,7 +12,7 @@ import org.bukkit.inventory.ItemStack;
 import org.greenem.plugins.server.data.NamesAndLines;
 import org.greenem.plugins.server.data.References;
 import org.greenem.plugins.server.miscellaneous.Stash;
-import org.greenem.plugins.server.util.SimpleLogger;
+import static org.greenem.plugins.server.util.SimpleLogger.log;import static org.greenem.plugins.server.util.SimpleLogger.debug;
 
 public class GameSelectScreen implements Listener {
 	public static Inventory menu;
@@ -70,7 +70,7 @@ public class GameSelectScreen implements Listener {
 						}
 						else { // team, but not leader
 							isntLeader = true;
-//							SimpleLogger.log(p.getName() + " got a way to open minigame selection screen in team with no leader on him");
+//							log(p.getName() + " got a way to open minigame selection screen in team with no leader on him");
 						}
 					}
 					else if(item.getType().equals(Material.RED_CONCRETE)) {
@@ -83,7 +83,7 @@ public class GameSelectScreen implements Listener {
 				}
 			}
 			else {
-				SimpleLogger.log("Strange type of WhoClicked - " + e.getWhoClicked().getClass().getName());
+				log("Strange type of WhoClicked - " + e.getWhoClicked().getClass().getName());
 			}
 		}
 	}

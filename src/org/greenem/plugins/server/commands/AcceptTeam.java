@@ -14,7 +14,7 @@ import org.greenem.plugins.server.data.References;
 import org.greenem.plugins.server.game.TeamManager;
 import org.greenem.plugins.server.main.Main;
 import org.greenem.plugins.server.miscellaneous.Stash;
-import org.greenem.plugins.server.util.SimpleLogger;
+import static org.greenem.plugins.server.util.SimpleLogger.log;import static org.greenem.plugins.server.util.SimpleLogger.debug;
 
 public class AcceptTeam implements CommandExecutor {
 	@Override
@@ -60,7 +60,7 @@ public class AcceptTeam implements CommandExecutor {
 					if(leader!=null) {
 						leader.sendMessage(ChatColor.WHITE + "" + ChatColor.BOLD + sender.getName() + ChatColor.RESET + "" + ChatColor.GREEN + " joined your team!");
 					}
-					//SimpleLogger.log(References.invitationIdToTeam.toString());
+					//log(References.invitationIdToTeam.toString());
 				}
 				else {
 					sender.sendMessage(ChatColor.RED + "You should put a number there! (from auto-command)");

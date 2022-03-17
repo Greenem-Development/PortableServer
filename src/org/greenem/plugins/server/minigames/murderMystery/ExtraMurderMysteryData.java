@@ -41,7 +41,8 @@ import org.greenem.plugins.server.game.ExtraGameData;
 import org.greenem.plugins.server.game.GameManager;
 import org.greenem.plugins.server.miscellaneous.Preparations;
 import org.greenem.plugins.server.miscellaneous.Stash;
-import org.greenem.plugins.server.util.SimpleLogger;
+import static org.greenem.plugins.server.util.SimpleLogger.log;
+import static org.greenem.plugins.server.util.SimpleLogger.debug;
 
 public class ExtraMurderMysteryData implements ExtraGameData {
 	public GameManager gm;
@@ -131,7 +132,7 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 		for(int i = 0; i < amountOfMurderers; i++) {
 			if(playersNeedRole.size() > 0) {
 				int num = rand.nextInt(playersNeedRole.size());
-				SimpleLogger.debug("Murderer " + num);
+				debug("Murderer " + num);
 				murderers.add(playersNeedRole.get(num));
 				playersNeedRole.remove(num);
 			}
@@ -139,14 +140,14 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 		for(int i = 0; i < amountOfDetectives; i++) {
 			if(playersNeedRole.size() > 0) {
 				int num = rand.nextInt(playersNeedRole.size());
-				SimpleLogger.debug("Detective " + num);
+				debug("Detective " + num);
 				detectives.add(playersNeedRole.get(num));
 				playersNeedRole.remove(num);
 			}
 		}
 		for(int i = 0; i < playersNeedRole.size(); i++) {
 			if(playersNeedRole.size() > 0) { //maybe no innocents already
-				SimpleLogger.debug("Innocent ");
+				debug("Innocent ");
 				innocents.add(playersNeedRole.get(i));
 				playersNeedRole.remove(i);
 			}
@@ -192,7 +193,7 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 			/*new BukkitRunnable() { // can have multihit tick problems, think about it later
 				@Override
 				public void run() {
-					SimpleLogger.debug("-health");
+					debug("-health");
 					if(p.getHealth()-p.getMaxHealth()/minusMaxDevideByWhat>0.1) {
 						p.setHealth(current-p.getMaxHealth()/minusMaxDevideByWhat);
 					}
@@ -227,10 +228,10 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 	
 	private void doDamageFromNonMurderer(Player m, Player o, EntityDamageByEntityEvent e) {
 		// some config ballance stuff here
-		SimpleLogger.log("doDamageFromNonMurderer");
+		log("doDamageFromNonMurderer");
 		if(murderers.contains(o.getName())) {
 			// also ballance here
-			SimpleLogger.log("doDamageFromNonMurderer murderer");
+			log("doDamageFromNonMurderer murderer");
 			String message = "You were killed";
 			damageMurderer(o, bowDoesWhatPartOfMurderersHp, message, e); // maybe shot info
 		}
@@ -353,7 +354,7 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 		if(e.getEntity().getWorld().equals(world)){
 			if(e.getEntity().getShooter() instanceof Player) {
 				if(e.getEntity() instanceof Arrow) {
-					SimpleLogger.debug(e.getHitEntity());
+					debug(e.getHitEntity());
 					Player p = (Player) e.getEntity().getShooter();
 					if(actualPlayers.contains(p.getName())) {
 						e.getEntity().remove();
@@ -460,10 +461,10 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 	@SuppressWarnings("deprecation")
 	private void spawnBow(Player p, Location loc) {
 		if(!detectives.contains(p.getName()) && !heroes.contains(p.getName())) {
-			SimpleLogger.debug("no detective");
+			debug("no detective");
 			return;
 		}
-		SimpleLogger.debug("detective");
+		debug("detective");
 		loc = loc.getBlock().getLocation(); // is that a copy already or bit, but doesn't matter already actually
 		loc.setX(loc.getX()+0.5);
 		loc.setZ(loc.getZ()+0.5);
@@ -494,7 +495,7 @@ public class ExtraMurderMysteryData implements ExtraGameData {
         		@Override
         		public void run() {
         			if(gameFinished || stand==null) {
-        				SimpleLogger.log("stand got null value");
+        				log("stand got null value");
         				if(stand!=null && !stand.isDead()) {
         					stand.remove();
         				}
@@ -748,9 +749,9 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 				if(murderers.contains(p.getName()) || innocents.contains(p.getName())) {
 					ItemStack itemPickedUp = e.getItem().getItemStack();
 					if(isItemStackTheGold(itemPickedUp)) {
-						SimpleLogger.debug(itemPickedUp.getAmount());
+						debug(itemPickedUp.getAmount());
 						goldCurrentlySpawned--;
-						SimpleLogger.debug("goldCurrentlySpawned " + goldCurrentlySpawned);
+						debug("goldCurrentlySpawned " + goldCurrentlySpawned);
 						int hasGold = 0;
 						for (int i = 0; i < p.getInventory().getSize(); i++) {
 							ItemStack itemStack = p.getInventory().getItem(i);
@@ -759,10 +760,10 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 							}
 						}
 						hasGold+=itemPickedUp.getAmount(); // just picked up
-						SimpleLogger.debug("hasGold " + hasGold);
+						debug("hasGold " + hasGold);
 						if(hasGold>=10) {
 							int getsArrows = hasGold/10; // 10 can be customisable
-							SimpleLogger.debug("getsArrows " + getsArrows);
+							debug("getsArrows " + getsArrows);
 							int hasArrows = 0;
 							for (int i = 0; i < p.getInventory().getSize(); i++) {
 								ItemStack itemStack = p.getInventory().getItem(i);
@@ -770,7 +771,7 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 									hasArrows += itemStack.getAmount();
 								}
 							}
-							SimpleLogger.debug("hasArrows " + hasArrows);
+							debug("hasArrows " + hasArrows);
 							Stash.addItemStack(p, new ItemStack(Material.ARROW, hasArrows + getsArrows), 8);
 							Stash.removeMaterial(p, Material.GOLD_INGOT);
 							if(!p.getInventory().contains(Material.BOW)) {
@@ -788,8 +789,8 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 					}
 					for (int i = 0; i < GoldSpawnExistingItems.size(); i++) {
 						if(GoldSpawnExistingItems.get(i).location.distance(e.getItem().getLocation()) < goldPickupDeleteFromUsedThreshold) {
-							SimpleLogger.debug("removing num " + GoldSpawnExistingItems.get(i).number);
-							SimpleLogger.debug("the loc is " + GoldSpawnExistingItems.get(i).location.toString());
+							debug("removing num " + GoldSpawnExistingItems.get(i).number);
+							debug("the loc is " + GoldSpawnExistingItems.get(i).location.toString());
 							GoldSpawnLocationsIndexesAlreayUsed.remove(Integer.valueOf(GoldSpawnExistingItems.get(i).number));
 							GoldSpawnExistingItems.remove(i);
 						}

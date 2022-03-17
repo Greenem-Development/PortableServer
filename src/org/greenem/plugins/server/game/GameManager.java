@@ -16,7 +16,7 @@ import org.greenem.plugins.server.data.Worlds;
 import org.greenem.plugins.server.minigames.murderMystery.MurderMysteryLocations;
 import org.greenem.plugins.server.miscellaneous.Preparations;
 import org.greenem.plugins.server.miscellaneous.WorldLoadHelper;
-import org.greenem.plugins.server.util.SimpleLogger;
+import static org.greenem.plugins.server.util.SimpleLogger.log;import static org.greenem.plugins.server.util.SimpleLogger.debug;
 
 public class GameManager {
 	Random rand = new Random();
@@ -34,7 +34,7 @@ public class GameManager {
 		if(extraGameData==null || tm==null) {
 			return 1;
 		}
-		SimpleLogger.log("start");
+		log("start");
 		prepareWorld();
 		if(worldName == null) {
 			return -1;
@@ -72,18 +72,18 @@ public class GameManager {
 		if(map.equals("default")) {
 			map = MinigamesStaticData.defaultMap.get(minigameType);
 		}
-		SimpleLogger.log("searchForAvaliableWorld");
+		log("searchForAvaliableWorld");
 		boolean foundWorldsEnd = false; // does not work if like world1 doesn't exist, think about it later
 		int avaliableNumber = 1;
 		while (!foundWorldsEnd) {
-			SimpleLogger.log("while");
+			log("while");
 			String worldName = minigameName + "_" + map + "_" + avaliableNumber;
 			if(WorldLoadHelper.worldExists(worldName)) {
 				if(!Worlds.usedWorlds.contains(worldName)) {
 					WorldLoadHelper.loadWorld(worldName);
 					// maybe something else???
 					Worlds.usedWorlds.add(worldName);
-					SimpleLogger.log("return");
+					log("return");
 					return worldName;
 				} else {
 					if(foundWorldsEnd) {
@@ -91,14 +91,14 @@ public class GameManager {
 					}
 				}
 			} else {
-				SimpleLogger.log("else");
+				log("else");
 				foundWorldsEnd = true;
 				break;
 			}
 			avaliableNumber++;
 		}
 		if(avaliableNumber == 1) {
-			SimpleLogger.log(ChatColor.RED + "There is no singe map for " + minigameName + " minigame with map " + map + ", fix it!"
+			log(ChatColor.RED + "There is no singe map for " + minigameName + " minigame with map " + map + ", fix it!"
 					+ "example for murder mystery, map 1, instance 1: murder_mystery_map1_1"); 
 		}
 		return null;

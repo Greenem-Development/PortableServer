@@ -1,7 +1,5 @@
 package org.greenem.plugins.server.worldProtection;
 
-import org.greenem.plugins.server.game.Minigame;
-
 public class ProtectionNames {
 	public static ProtectionType getProtectionType(String worldName) {
 		ProtectionType protectionType = null;

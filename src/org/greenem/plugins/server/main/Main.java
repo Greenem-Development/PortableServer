@@ -33,7 +33,7 @@ import org.greenem.plugins.server.game.ExtraGameData;
 import org.greenem.plugins.server.game.Minigame;
 import org.greenem.plugins.server.minigames.murderMystery.MurderMysteryLocations;
 import org.greenem.plugins.server.miscellaneous.Stash;
-import org.greenem.plugins.server.util.SimpleLogger;
+import static org.greenem.plugins.server.util.SimpleLogger.log;import static org.greenem.plugins.server.util.SimpleLogger.debug;
 import org.greenem.plugins.server.worldProtection.MainProtector;
 
 public class Main extends JavaPlugin implements Listener {
@@ -101,7 +101,7 @@ public class Main extends JavaPlugin implements Listener {
 				}
 				else if(success==1) {
 					sender.sendMessage(ChatColor.RED + "An error occured while starting the game");
-					SimpleLogger.log(ChatColor.RED + "STARTING A GAME DIDN'T SUCCEED! (Minigame type: " + gameManager.minigameType + ")");
+					log(ChatColor.RED + "STARTING A GAME DIDN'T SUCCEED! (Minigame type: " + gameManager.minigameType + ")");
 				}
 			}
 		}

@@ -8,7 +8,7 @@ import org.greenem.plugins.server.data.MinigamesStaticData;
 import org.greenem.plugins.server.data.NamesAndLines;
 import org.greenem.plugins.server.data.References;
 import org.greenem.plugins.server.data.Structure;
-import org.greenem.plugins.server.util.SimpleLogger;
+import static org.greenem.plugins.server.util.SimpleLogger.log;import static org.greenem.plugins.server.util.SimpleLogger.debug;
 
 public class GameCreation {
 	public static void startNewGame(Player p, Minigame minigame, String map, ExtraGameData data) {
@@ -40,7 +40,7 @@ public class GameCreation {
 		}
 		int success = gameManager.start();
 		if(success==0) {
-			SimpleLogger.debug("add gameManagers");
+			debug("add gameManagers");
 			Structure.gameManagers.add(gameManager);
 			References.playersInGame.add(p.getName());
 			References.playersTeam.get(p.getName()).inGame = true;
@@ -50,7 +50,7 @@ public class GameCreation {
 		}
 		else if(success==1) {
 			p.sendMessage(ChatColor.RED + "An error occured while starting the game");
-			SimpleLogger.log(ChatColor.RED + "STARTING A GAME DIDN'T SUCCEED! (Minigame type: " + gameManager.minigameType + ")");
+			log(ChatColor.RED + "STARTING A GAME DIDN'T SUCCEED! (Minigame type: " + gameManager.minigameType + ")");
 		}
 	}
 }

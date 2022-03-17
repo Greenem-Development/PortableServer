@@ -6,7 +6,8 @@ import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
-import org.greenem.plugins.server.util.SimpleLogger;
+import static org.greenem.plugins.server.util.SimpleLogger.log;
+import static org.greenem.plugins.server.util.SimpleLogger.debug;
 
 public class WorldLoadHelper {
 	public static boolean worldLoaded(String name) {

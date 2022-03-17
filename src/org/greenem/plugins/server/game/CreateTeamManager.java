@@ -12,7 +12,7 @@ import org.bukkit.entity.Player;
 import org.greenem.plugins.server.data.ConfigData;
 import org.greenem.plugins.server.data.References;
 import org.greenem.plugins.server.main.Main;
-import org.greenem.plugins.server.util.SimpleLogger;
+import static org.greenem.plugins.server.util.SimpleLogger.log;import static org.greenem.plugins.server.util.SimpleLogger.debug;
 
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;

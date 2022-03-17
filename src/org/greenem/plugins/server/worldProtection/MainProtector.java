@@ -19,7 +19,8 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.greenem.plugins.server.data.Locs;
 import org.greenem.plugins.server.miscellaneous.Stash;
-import org.greenem.plugins.server.util.SimpleLogger;
+import static org.greenem.plugins.server.util.SimpleLogger.log;
+import static org.greenem.plugins.server.util.SimpleLogger.debug;
 
 public class MainProtector implements Listener {
 	private float voidHeight = -20;
@@ -257,10 +258,10 @@ public class MainProtector implements Listener {
 		}
 	}
 	
-	// System stuff
+	// System stuff --------------------------------------------------------------------------------------------------------------------------------------
 	
 	@EventHandler
-	public void preventPaintingOrItemFrameDamage (HangingBreakByEntityEvent e) {
+	public void preventPaintingOrItemFrameDamage(HangingBreakByEntityEvent e) {
 		checkPaintingDamage(e);
 		checkItemFrameDamage(e);
 	}
