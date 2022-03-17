@@ -20,6 +20,14 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 
 public class Stash {
+	public static boolean hasItemInAnyHand(Player p, Material m) {
+		return p.getInventory().getItemInMainHand().getType()==m || p.getInventory().getItemInOffHand().getType()==m;
+	}
+	
+	public static boolean hasItemInHand(Player p, Material m) {
+		return p.getInventory().getItemInMainHand().getType()==m;
+	}
+	
 	public static int getSlotNumber(int row, int column) {
 		return (row-1)*9-1 + column;
 	}

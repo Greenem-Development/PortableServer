@@ -18,6 +18,7 @@ import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.greenem.plugins.server.data.Locs;
+import org.greenem.plugins.server.miscellaneous.Stash;
 import org.greenem.plugins.server.util.SimpleLogger;
 
 public class MainProtector implements Listener {
@@ -167,12 +168,12 @@ public class MainProtector implements Listener {
 	}
 	
 	@EventHandler
-	public void PaintingArrow (HangingBreakByEntityEvent e) {
-		checkPaintingRemovedByArrow(e);
+	public void preventPaintingOrItemFrameDamage (HangingBreakByEntityEvent e) {
+		checkPaintingDamage(e);
 		checkItemFrameDamage(e);
 	}
 
-	private void checkPaintingRemovedByArrow(HangingBreakByEntityEvent e){
+	private void checkPaintingDamage(HangingBreakByEntityEvent e){
 		if(e.getEntity() instanceof Painting) {
 			onPainingDamage(e);
 		}
@@ -185,11 +186,18 @@ public class MainProtector implements Listener {
 	}
 	
 	private void onPainingDamage(HangingBreakByEntityEvent e) {
-		if(e.getRemover() instanceof Projectile) {
+		if(e.getRemover() instanceof Player) {
+			Player p = (Player) e.getRemover();
+			if(p.getGameMode()==GameMode.SURVIVAL || p.getGameMode()==GameMode.ADVENTURE || Stash.hasItemInHand(p, Material.IRON_SWORD)
+					 || Stash.hasItemInHand(p, Material.DIAMOND_SWORD)) {
+				cancelPaintingPlayerDamage(e, p.getWorld());
+			}
+		}
+		else if(e.getRemover() instanceof Projectile) {
 			if(((Projectile) e.getRemover()).getShooter() instanceof Player) {
 				Player p = (Player) ((Projectile) e.getRemover()).getShooter();
 				if(p.getGameMode()==GameMode.SURVIVAL || p.getGameMode()==GameMode.ADVENTURE) {
-					cancelBreakingPaintingOrFrameByArrowFromPlayer(e, p.getWorld());
+					cancelBreakingPaintingByArrowFromPlayer(e, p.getWorld());
 				}
 			}
 			else {
@@ -198,7 +206,22 @@ public class MainProtector implements Listener {
 		}
 	}
 	
-	private void cancelBreakingPaintingOrFrameByArrowFromPlayer(HangingBreakByEntityEvent e, World world) {
+	private void cancelPaintingPlayerDamage(HangingBreakByEntityEvent e, World w){
+		ProtectionType pt = ProtectionNames.getProtectionType(w.getName());
+		if(pt==null) return;
+		switch (pt) {
+			case HUB: {
+				e.setCancelled(true);
+				break;
+			}
+			case MURDER_MUSTERY_GAME: {
+				e.setCancelled(true);
+				break;
+			}
+		}
+	}
+	
+	private void cancelBreakingPaintingByArrowFromPlayer(HangingBreakByEntityEvent e, World world) {
 		ProtectionType pt = ProtectionNames.getProtectionType(world.getName());
 		if(pt==null) return;
 		switch (pt) {
@@ -231,19 +254,47 @@ public class MainProtector implements Listener {
 	private void onItemFrameDamage(HangingBreakByEntityEvent e) {
 		if(e.getRemover() instanceof Player) {
 			Player p = (Player) e.getRemover();
-			if(p.getGameMode()==GameMode.SURVIVAL || p.getGameMode()==GameMode.ADVENTURE) {
-				ProtectionType pt = ProtectionNames.getProtectionType(p.getWorld().getName());
-				if(pt==null) return;
-				switch (pt) {
-					case HUB: {
-						e.setCancelled(true);
-						break;
-					}
-					case MURDER_MUSTERY_GAME: {
-						e.setCancelled(true);
-						break;
-					}
+			if(p.getGameMode()==GameMode.SURVIVAL || p.getGameMode()==GameMode.ADVENTURE || Stash.hasItemInHand(p, Material.IRON_SWORD)
+					 || Stash.hasItemInHand(p, Material.DIAMOND_SWORD)) {
+				cancelItemFramePlayerDamage(e, p.getWorld());
+			}
+		}
+		else if (e.getRemover() instanceof Projectile) {
+			if(((Projectile) e.getRemover()).getShooter() instanceof Player) {
+				Player p = (Player) ((Projectile) e.getRemover()).getShooter();
+				if(p.getGameMode()==GameMode.SURVIVAL || p.getGameMode()==GameMode.ADVENTURE) {
+					cancelBreakingItemFrameByArrowFromPlayer(e, p.getWorld());
 				}
+			}
+		}
+	}
+	
+	private void cancelBreakingItemFrameByArrowFromPlayer(HangingBreakByEntityEvent e, World world) {
+		ProtectionType pt = ProtectionNames.getProtectionType(world.getName());
+		if(pt==null) return;
+		switch (pt) {
+			case HUB: {
+				e.setCancelled(true);
+				break;
+			}
+			case MURDER_MUSTERY_GAME: {
+				e.setCancelled(true);
+				break;
+			}
+		}
+	}
+	
+	private void cancelItemFramePlayerDamage(HangingBreakByEntityEvent e, World w){
+		ProtectionType pt = ProtectionNames.getProtectionType(w.getName());
+		if(pt==null) return;
+		switch (pt) {
+			case HUB: {
+				e.setCancelled(true);
+				break;
+			}
+			case MURDER_MUSTERY_GAME: {
+				e.setCancelled(true);
+				break;
 			}
 		}
 	}
