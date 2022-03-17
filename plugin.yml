@@ -33,3 +33,6 @@ commands:
    leaveteam:
       description: No description
       default: true
+   dogoodgamerules:
+      description: No description
+      default: true

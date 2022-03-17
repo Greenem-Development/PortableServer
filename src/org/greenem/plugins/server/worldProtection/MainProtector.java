@@ -4,6 +4,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Painting;
 import org.bukkit.entity.Player;
@@ -13,12 +14,16 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
+import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.greenem.plugins.server.data.Locs;
 import org.greenem.plugins.server.miscellaneous.Stash;
+
 import static org.greenem.plugins.server.util.SimpleLogger.log;
 import static org.greenem.plugins.server.util.SimpleLogger.debug;
 
@@ -30,7 +35,7 @@ public class MainProtector implements Listener {
 		ProtectionType pt = ProtectionNames.getProtectionType(e.getBlock().getWorld().getName());
 		if(pt==null) return;
 		Player p = e.getPlayer();
-		if(p.getGameMode()==GameMode.SURVIVAL || p.getGameMode()==GameMode.ADVENTURE) {
+		if(Stash.isInSurvivalOrAdv(p)) {
 			switch (pt) {
 			case HUB: {
 				usualCancelBlockBreak(e);
@@ -55,7 +60,7 @@ public class MainProtector implements Listener {
 		ProtectionType pt = ProtectionNames.getProtectionType(e.getBlock().getWorld().getName());
 		if(pt==null) return;
 		Player p = e.getPlayer();
-		if(p.getGameMode()==GameMode.SURVIVAL || p.getGameMode()==GameMode.ADVENTURE) {
+		if(Stash.isInSurvivalOrAdv(p)) {
 			switch (pt) {
 				case HUB: {
 					usualCancelBlockPlace(e);
@@ -79,7 +84,7 @@ public class MainProtector implements Listener {
 		Block b = e.getClickedBlock();
 		ProtectionType pt = ProtectionNames.getProtectionType(e.getPlayer().getWorld().getName());
 		if(pt==null) return;
-        if(p.getGameMode()==GameMode.SURVIVAL) {
+        if(Stash.isInSurvivalOrAdv(p)) {
         	if(e.getClickedBlock() != null) {
         		if(e.getAction().equals(Action.RIGHT_CLICK_AIR) || e.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
         			if(isAPot(b.getType())) {
@@ -141,13 +146,15 @@ public class MainProtector implements Listener {
 		ProtectionType pt = ProtectionNames.getProtectionType(e.getEntity().getWorld().getName());
 		if(pt==null) return;
 		if (e.getEntity() instanceof Player) { // what if I need not a player
-			switch (pt) {
-				case HUB: {
-					e.setCancelled(true); // not a special method for this because damage event here is kinda weird, it's controlled from game
-					break;
+			if(e.getCause()!=DamageCause.VOID) { // may be moved or removed later
+				switch (pt) {
+					case HUB: {
+						e.setCancelled(true); // not a special method for this because damage event here is kinda weird, it's controlled from game
+						break;
+					}
+					default:
+						break;
 				}
-				default:
-					break;
 			}
 		}
 	}
@@ -258,30 +265,72 @@ public class MainProtector implements Listener {
 		}
 	}
 	
+	@EventHandler
+	public void onArmorstandManipulation(PlayerArmorStandManipulateEvent e) {
+		if(Stash.isInSurvivalOrAdv(e.getPlayer())) {
+			ProtectionType pt = ProtectionNames.getProtectionType(e.getPlayer().getWorld().getName());
+			if(pt==null) return;
+			switch (pt) {
+				case HUB: {
+					e.setCancelled(true);
+					break;
+				}
+				case MURDER_MUSTERY_GAME: {
+					e.setCancelled(true);
+					break;
+				}
+			}
+		}
+	}
+	
+	private void checkArmorStandDamage(EntityDamageByEntityEvent e) {
+		if(e.getEntity() instanceof ArmorStand) {
+			if(e.getDamager() instanceof Player) {
+				Player p = (Player) e.getDamager();
+				if(Stash.isInSurvivalOrAdv(p)) {
+					ProtectionType pt = ProtectionNames.getProtectionType(e.getEntity().getWorld().getName());
+					if(pt==null) return;
+					switch (pt) {
+						case HUB: {
+							e.setCancelled(true);
+							break;
+						}
+						default:
+							break;
+					}
+				}
+			}
+		}
+	}	
+	
 	// System stuff --------------------------------------------------------------------------------------------------------------------------------------
 	
 	@EventHandler
 	public void preventPaintingOrItemFrameDamage(HangingBreakByEntityEvent e) {
 		checkPaintingDamage(e);
 		checkItemFrameDamage(e);
-	}
+	}	
 
-	private void checkPaintingDamage(HangingBreakByEntityEvent e){
+	private boolean checkPaintingDamage(HangingBreakByEntityEvent e){
 		if(e.getEntity() instanceof Painting) {
 			onPainingDamage(e);
+			return true;
 		}
+		return false;
 	}
 	
-	private void checkItemFrameDamage(HangingBreakByEntityEvent e){ // onItemFrameDamage
+	private boolean checkItemFrameDamage(HangingBreakByEntityEvent e){ // onItemFrameDamage
 		if(e.getEntity() instanceof ItemFrame) {
 			onItemFrameDamage(e);
+			return true;
 		}
+		return false;
 	}
 	
 	private void onPainingDamage(HangingBreakByEntityEvent e) {
 		if(e.getRemover() instanceof Player) {
 			Player p = (Player) e.getRemover();
-			if(p.getGameMode()==GameMode.SURVIVAL || p.getGameMode()==GameMode.ADVENTURE || Stash.hasItemInHand(p, Material.IRON_SWORD)
+			if(Stash.isInSurvivalOrAdv(p) || Stash.hasItemInHand(p, Material.IRON_SWORD)
 					 || Stash.hasItemInHand(p, Material.DIAMOND_SWORD)) {
 				cancelPaintingPlayerDamage(e, p.getWorld());
 			}
@@ -289,7 +338,7 @@ public class MainProtector implements Listener {
 		else if(e.getRemover() instanceof Projectile) {
 			if(((Projectile) e.getRemover()).getShooter() instanceof Player) {
 				Player p = (Player) ((Projectile) e.getRemover()).getShooter();
-				if(p.getGameMode()==GameMode.SURVIVAL || p.getGameMode()==GameMode.ADVENTURE) {
+				if(Stash.isInSurvivalOrAdv(p)) {
 					cancelBreakingPaintingByArrowFromPlayer(e, p.getWorld());
 				}
 			}
@@ -302,7 +351,7 @@ public class MainProtector implements Listener {
 	private void onItemFrameDamage(HangingBreakByEntityEvent e) {
 		if(e.getRemover() instanceof Player) {
 			Player p = (Player) e.getRemover();
-			if(p.getGameMode()==GameMode.SURVIVAL || p.getGameMode()==GameMode.ADVENTURE || Stash.hasItemInHand(p, Material.IRON_SWORD)
+			if(Stash.isInSurvivalOrAdv(p) || Stash.hasItemInHand(p, Material.IRON_SWORD)
 					 || Stash.hasItemInHand(p, Material.DIAMOND_SWORD)) {
 				cancelItemFramePlayerDamage(e, p.getWorld());
 			}
@@ -310,7 +359,7 @@ public class MainProtector implements Listener {
 		else if (e.getRemover() instanceof Projectile) {
 			if(((Projectile) e.getRemover()).getShooter() instanceof Player) {
 				Player p = (Player) ((Projectile) e.getRemover()).getShooter();
-				if(p.getGameMode()==GameMode.SURVIVAL || p.getGameMode()==GameMode.ADVENTURE) {
+				if(Stash.isInSurvivalOrAdv(p)) {
 					cancelBreakingItemFrameByArrowFromPlayer(e, p.getWorld());
 				}
 			}
@@ -318,5 +367,10 @@ public class MainProtector implements Listener {
 				cancelBreakingItemFrameByArrowFromMob(e, e.getEntity().getWorld());
 			}
 		}
+	}
+	
+	@EventHandler
+	public void onEntityDamageByEntityEvent(EntityDamageByEntityEvent e){
+		checkArmorStandDamage(e);
 	}
 }

@@ -7,8 +7,10 @@ import java.util.Collections;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
+import org.bukkit.GameRule;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
@@ -20,6 +22,39 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 
 public class Stash {
+	public static void setGoodGamerules(World w) {
+		w.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
+		w.setGameRule(GameRule.COMMAND_BLOCK_OUTPUT, false);
+		w.setGameRule(GameRule.DISABLE_ELYTRA_MOVEMENT_CHECK, true);
+		w.setGameRule(GameRule.DISABLE_RAIDS, true);
+		w.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
+		w.setGameRule(GameRule.DO_WEATHER_CYCLE, false);
+		w.setGameRule(GameRule.DO_INSOMNIA, false);
+		w.setGameRule(GameRule.DO_MOB_SPAWNING, false);
+		w.setGameRule(GameRule.DO_TRADER_SPAWNING, false);
+		w.setGameRule(GameRule.DO_PATROL_SPAWNING, false);
+		w.setGameRule(GameRule.MOB_GRIEFING, false);
+		w.setGameRule(GameRule.NATURAL_REGENERATION, true); // sure?
+		w.setGameRule(GameRule.SPAWN_RADIUS, 0); // important
+		w.setGameRule(GameRule.SPECTATORS_GENERATE_CHUNKS, false);
+		w.setGameRule(GameRule.DO_ENTITY_DROPS, true);
+		w.setGameRule(GameRule.DO_FIRE_TICK, true);
+		w.setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, false);
+		w.setGameRule(GameRule.DO_MOB_SPAWNING, true);
+		w.setGameRule(GameRule.DO_MOB_LOOT, true);
+		w.setGameRule(GameRule.DO_MOB_SPAWNING, true);
+		w.setGameRule(GameRule.DO_TILE_DROPS, true);
+		w.setGameRule(GameRule.DROWNING_DAMAGE, true);
+		w.setGameRule(GameRule.FALL_DAMAGE, true);
+		w.setGameRule(GameRule.FIRE_DAMAGE, true);
+		w.setGameRule(GameRule.FREEZE_DAMAGE, true);
+		w.setGameRule(GameRule.KEEP_INVENTORY, false);
+	}
+	
+	public static boolean isInSurvivalOrAdv(Player p) {
+		return p.getGameMode()==GameMode.SURVIVAL || p.getGameMode()==GameMode.ADVENTURE;
+	}
+	
 	public static boolean hasItemInAnyHand(Player p, Material m) {
 		return p.getInventory().getItemInMainHand().getType()==m || p.getInventory().getItemInOffHand().getType()==m;
 	}

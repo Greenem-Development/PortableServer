@@ -332,9 +332,6 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 					Stash.addItemStack(damager, new ItemStack(Material.ARROW, 1), 9);
 				}
 			}
-			else if(e.getEntity() instanceof ArmorStand) {
-				e.setCancelled(true); // enough?
-			}
 		}
 	}
 	

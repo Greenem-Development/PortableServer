@@ -9,6 +9,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -35,6 +36,7 @@ import org.greenem.plugins.server.minigames.murderMystery.MurderMysteryLocations
 import org.greenem.plugins.server.miscellaneous.Stash;
 import static org.greenem.plugins.server.util.SimpleLogger.log;import static org.greenem.plugins.server.util.SimpleLogger.debug;
 import org.greenem.plugins.server.worldProtection.MainProtector;
+import org.greenem.plugins.server.worldProtection.PlaceDependentEvents;
 
 public class Main extends JavaPlugin implements Listener {
 	
@@ -122,6 +124,11 @@ public class Main extends JavaPlugin implements Listener {
 			if(isSenderAPlayer(sender)) {
 				log.info(coordsStr);
 				coordsStr = "";
+			}
+		}
+		else if(cmd.getName().equalsIgnoreCase("dogoodgamerules")){
+			if(isSenderAPlayer(sender)) {
+				Stash.setGoodGamerules(((Player) sender).getWorld());
 			}
 		}
 		return false;
@@ -253,5 +260,6 @@ public class Main extends JavaPlugin implements Listener {
 		manager.registerEvents(new GameSelectScreen(), this);
 		manager.registerEvents(new GameSelectScreen(), this);
 		manager.registerEvents(new MainProtector(), this);
+		manager.registerEvents(new PlaceDependentEvents(), this);
 	}
 }
