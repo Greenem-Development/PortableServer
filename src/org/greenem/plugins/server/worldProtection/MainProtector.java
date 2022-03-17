@@ -2,7 +2,9 @@ package org.greenem.plugins.server.worldProtection;
 
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Painting;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -16,6 +18,7 @@ import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.greenem.plugins.server.data.Locs;
+import org.greenem.plugins.server.util.SimpleLogger;
 
 public class MainProtector implements Listener {
 	private float voidHeight = -20;
@@ -23,20 +26,21 @@ public class MainProtector implements Listener {
 	@EventHandler
 	public static void onBlockBreak(BlockBreakEvent e) {
 		ProtectionType pt = ProtectionNames.getProtectionType(e.getBlock().getWorld().getName());
-		if(pt==null) {
-			return;
-		}	
-		switch (pt) {
-		case HUB: {
-			usualCancelBlockBreak(e);
-			break;
-		}
-		case MURDER_MUSTERY_GAME: {
-			usualCancelBlockBreak(e);
-			break;
-		}
-		default:
-			throw new IllegalArgumentException("Unexpected value: " + pt);
+		if(pt==null) return;
+		Player p = e.getPlayer();
+		if(p.getGameMode()==GameMode.SURVIVAL || p.getGameMode()==GameMode.ADVENTURE) {
+			switch (pt) {
+			case HUB: {
+				usualCancelBlockBreak(e);
+				break;
+			}
+			case MURDER_MUSTERY_GAME: {
+				usualCancelBlockBreak(e);
+				break;
+			}
+			default:
+				throw new IllegalArgumentException("Unexpected value: " + pt);
+			}
 		}
 	}
 	
@@ -48,15 +52,18 @@ public class MainProtector implements Listener {
 	public static void onBlockPlace(BlockPlaceEvent e) {
 		ProtectionType pt = ProtectionNames.getProtectionType(e.getBlock().getWorld().getName());
 		if(pt==null) return;
-		switch (pt) {
-			case HUB: {
-				usualCancelBlockPlace(e);
-				break;
+		Player p = e.getPlayer();
+		if(p.getGameMode()==GameMode.SURVIVAL || p.getGameMode()==GameMode.ADVENTURE) {
+			switch (pt) {
+				case HUB: {
+					usualCancelBlockPlace(e);
+					break;
+				}
+				case MURDER_MUSTERY_GAME: {
+					usualCancelBlockPlace(e);
+					break;
+				}
 			}
-			case MURDER_MUSTERY_GAME: {
-				usualCancelBlockPlace(e);
-				break;
-			}		
 		}
 	}
 	
@@ -68,7 +75,7 @@ public class MainProtector implements Listener {
 	public void PlayerInteractEvent(PlayerInteractEvent e){
 		Player p = e.getPlayer();
 		Block b = e.getClickedBlock();
-		ProtectionType pt = ProtectionNames.getProtectionType(b.getWorld().getName());
+		ProtectionType pt = ProtectionNames.getProtectionType(e.getPlayer().getWorld().getName());
 		if(pt==null) return;
         if(p.getGameMode()==GameMode.SURVIVAL) {
         	if(e.getClickedBlock() != null) {
@@ -111,6 +118,7 @@ public class MainProtector implements Listener {
 	}
 	
 	private static boolean isAPot(Material m) {
+		if(m==null) return false;
 		if(m==Material.FLOWER_POT) {
 			return true;
 		}
@@ -122,6 +130,7 @@ public class MainProtector implements Listener {
 	}
 	
 	private static boolean isATrapdoor(Material m) {
+		if(m==null) return false;
 		return m.toString().contains("TRAPDOOR");
 	}
 	
@@ -158,24 +167,81 @@ public class MainProtector implements Listener {
 	}
 	
 	@EventHandler
-	public void PaintingArrow4 (HangingBreakByEntityEvent e) {
+	public void PaintingArrow (HangingBreakByEntityEvent e) {
+		checkPaintingRemovedByArrow(e);
+		checkItemFrameDamage(e);
+	}
+
+	private void checkPaintingRemovedByArrow(HangingBreakByEntityEvent e){
 		if(e.getEntity() instanceof Painting) {
-			if(e.getRemover() instanceof Projectile) {
-				if(((Projectile) e.getRemover()).getShooter() instanceof Player) {
-					Player p = (Player) ((Projectile) e.getRemover()).getShooter();
-					ProtectionType pt = ProtectionNames.getProtectionType(p.getWorld().getName());
-					if(pt==null) return;
-					switch (pt) {
-						case HUB: {
-							e.setCancelled(true);
-							break;
-						}
-						case MURDER_MUSTERY_GAME: {
-							e.setCancelled(true);
-							break;
-						}
-						default:
-							break;
+			onPainingDamage(e);
+		}
+	}
+	
+	private void checkItemFrameDamage(HangingBreakByEntityEvent e){ // onItemFrameDamage
+		if(e.getEntity() instanceof ItemFrame) {
+			onItemFrameDamage(e);
+		}
+	}
+	
+	private void onPainingDamage(HangingBreakByEntityEvent e) {
+		if(e.getRemover() instanceof Projectile) {
+			if(((Projectile) e.getRemover()).getShooter() instanceof Player) {
+				Player p = (Player) ((Projectile) e.getRemover()).getShooter();
+				if(p.getGameMode()==GameMode.SURVIVAL || p.getGameMode()==GameMode.ADVENTURE) {
+					cancelBreakingPaintingOrFrameByArrowFromPlayer(e, p.getWorld());
+				}
+			}
+			else {
+				cancelBreakingPaintingOrFrameByArrowFromMob(e, e.getEntity().getWorld());
+			}
+		}
+	}
+	
+	private void cancelBreakingPaintingOrFrameByArrowFromPlayer(HangingBreakByEntityEvent e, World world) {
+		ProtectionType pt = ProtectionNames.getProtectionType(world.getName());
+		if(pt==null) return;
+		switch (pt) {
+			case HUB: {
+				e.setCancelled(true);
+				break;
+			}
+			case MURDER_MUSTERY_GAME: {
+				e.setCancelled(true);
+				break;
+			}
+		}
+	}
+	
+	private void cancelBreakingPaintingOrFrameByArrowFromMob(HangingBreakByEntityEvent e, World world) {
+		ProtectionType pt = ProtectionNames.getProtectionType(world.getName());
+		if(pt==null) return;
+		switch (pt) {
+			case HUB: {
+				e.setCancelled(true);
+				break;
+			}
+			case MURDER_MUSTERY_GAME: {
+				e.setCancelled(true);
+				break;
+			}
+		}
+	}
+	
+	private void onItemFrameDamage(HangingBreakByEntityEvent e) {
+		if(e.getRemover() instanceof Player) {
+			Player p = (Player) e.getRemover();
+			if(p.getGameMode()==GameMode.SURVIVAL || p.getGameMode()==GameMode.ADVENTURE) {
+				ProtectionType pt = ProtectionNames.getProtectionType(p.getWorld().getName());
+				if(pt==null) return;
+				switch (pt) {
+					case HUB: {
+						e.setCancelled(true);
+						break;
+					}
+					case MURDER_MUSTERY_GAME: {
+						e.setCancelled(true);
+						break;
 					}
 				}
 			}

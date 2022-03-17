@@ -16,6 +16,7 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.greenem.plugins.server.commands.AcceptTeam;
 import org.greenem.plugins.server.commands.LeaveTeam;
@@ -33,6 +34,7 @@ import org.greenem.plugins.server.game.Minigame;
 import org.greenem.plugins.server.minigames.murderMystery.MurderMysteryLocations;
 import org.greenem.plugins.server.miscellaneous.Stash;
 import org.greenem.plugins.server.util.SimpleLogger;
+import org.greenem.plugins.server.worldProtection.MainProtector;
 
 public class Main extends JavaPlugin implements Listener {
 	
@@ -245,8 +247,11 @@ public class Main extends JavaPlugin implements Listener {
 	}
 	
 	public void RegisterAllListeners() {
-		getServer().getPluginManager().registerEvents(this, this);
-		getServer().getPluginManager().registerEvents(new MainEvents(), this);
-		getServer().getPluginManager().registerEvents(new GameSelectScreen(), this);
+		PluginManager manager = Bukkit.getPluginManager();
+		manager.registerEvents(this, this);
+		manager.registerEvents(new MainEvents(), this);
+		manager.registerEvents(new GameSelectScreen(), this);
+		manager.registerEvents(new GameSelectScreen(), this);
+		manager.registerEvents(new MainProtector(), this);
 	}
 }
