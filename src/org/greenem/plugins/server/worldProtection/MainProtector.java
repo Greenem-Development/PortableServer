@@ -9,6 +9,7 @@ import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Painting;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -19,11 +20,13 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerInteractAtEntityEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.greenem.plugins.server.data.Locs;
 import org.greenem.plugins.server.miscellaneous.Stash;
-
 import static org.greenem.plugins.server.util.SimpleLogger.log;
 import static org.greenem.plugins.server.util.SimpleLogger.debug;
 
@@ -283,6 +286,32 @@ public class MainProtector implements Listener {
 		}
 	}
 	
+	@EventHandler
+	public void itemFrameTakingOut1(PlayerInteractEntityEvent e) {
+		log(e.getEventName());
+	}
+	
+	@EventHandler
+	public void itemFrameTakingOut(PlayerInteractAtEntityEvent e) {
+		log(e.getEventName());
+		if (e.getRightClicked() instanceof ItemFrame) {
+        	if(Stash.isInSurvivalOrAdv(e.getPlayer())) {
+        		ProtectionType pt = ProtectionNames.getProtectionType(e.getPlayer().getWorld().getName());
+				if(pt==null) return;
+				switch (pt) {
+					case HUB: {
+						e.setCancelled(true);
+						break;
+					}
+					case MURDER_MUSTERY_GAME: {
+						e.setCancelled(true);
+						break;
+					}
+				}
+        	}
+        }
+	}
+	
 	private void checkArmorStandDamage(EntityDamageByEntityEvent e) {
 		if(e.getEntity() instanceof ArmorStand) {
 			if(e.getDamager() instanceof Player) {
@@ -295,13 +324,53 @@ public class MainProtector implements Listener {
 							e.setCancelled(true);
 							break;
 						}
-						default:
+						case MURDER_MUSTERY_GAME: {
+							e.setCancelled(true);
 							break;
+						}
 					}
 				}
 			}
 		}
-	}	
+	}
+	
+	@EventHandler
+    public void FrameRotation(PlayerInteractEntityEvent e) {
+//		log(e.getEventName());
+        if (e.getRightClicked() instanceof ItemFrame) {
+        	if(Stash.isInSurvivalOrAdv(e.getPlayer())) {
+        		ProtectionType pt = ProtectionNames.getProtectionType(e.getPlayer().getWorld().getName());
+				if(pt==null) return;
+				switch (pt) {
+					case HUB: {
+						e.setCancelled(true);
+						break;
+					}
+					case MURDER_MUSTERY_GAME: {
+						e.setCancelled(true);
+						break;
+					}
+				}
+        	}
+        }
+    }
+	
+	@EventHandler
+	public void disasbleItemDropping(PlayerDropItemEvent e) {
+		Player p = e.getPlayer();
+		if(Stash.isInSurvivalOrAdv(p)) {
+			ProtectionType pt = ProtectionNames.getProtectionType(p.getWorld().getName());
+			if(pt==null) return;
+			switch (pt) {
+				case MURDER_MUSTERY_GAME: {
+					e.setCancelled(true);
+					break;
+				}
+				default:
+					break;
+			}
+		}
+	}
 	
 	// System stuff --------------------------------------------------------------------------------------------------------------------------------------
 	

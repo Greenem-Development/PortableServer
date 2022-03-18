@@ -797,13 +797,6 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 		}
 	}
 	
-	@EventHandler public void disasbleItemDropping(PlayerDropItemEvent e) {
-		Player p = e.getPlayer();
-		if(p.getWorld().equals(world)) {
-			e.setCancelled(true);
-		}
-	}
-	
 	private void onGameEnd() {
 		repeatingTask.cancel(); // sure? right here?
 		
