@@ -18,6 +18,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.entity.EntityDropItemEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
@@ -287,11 +288,6 @@ public class MainProtector implements Listener {
 	}
 	
 	@EventHandler
-	public void itemFrameTakingOut1(PlayerInteractEntityEvent e) {
-		log(e.getEventName());
-	}
-	
-	@EventHandler
 	public void itemFrameTakingOut(PlayerInteractAtEntityEvent e) {
 		log(e.getEventName());
 		if (e.getRightClicked() instanceof ItemFrame) {
@@ -312,13 +308,13 @@ public class MainProtector implements Listener {
         }
 	}
 	
-	private void checkArmorStandDamage(EntityDamageByEntityEvent e) {
+	private void checkArmorStandDamage(EntityDamageByEntityEvent e) { // breaking an Armorstand
 		if(e.getEntity() instanceof ArmorStand) {
-			if(e.getDamager() instanceof Player) {
+			ProtectionType pt = ProtectionNames.getProtectionType(e.getEntity().getWorld().getName());
+			if(pt==null) return;
+			if(e.getDamager() instanceof Player) { // by hand
 				Player p = (Player) e.getDamager();
 				if(Stash.isInSurvivalOrAdv(p)) {
-					ProtectionType pt = ProtectionNames.getProtectionType(e.getEntity().getWorld().getName());
-					if(pt==null) return;
 					switch (pt) {
 						case HUB: {
 							e.setCancelled(true);
@@ -330,6 +326,50 @@ public class MainProtector implements Listener {
 						}
 					}
 				}
+			} else { // with an arrow or maybe even a bod did that
+				switch (pt) {
+				case HUB: {
+					e.setCancelled(true);
+					break;
+				}
+				case MURDER_MUSTERY_GAME: {
+					e.setCancelled(true);
+					break;
+				}
+			}
+			}
+		}
+	}
+	
+	private void checkItemFrameItemDamage(EntityDamageByEntityEvent e) { // breaking item out of itemFrame
+		if(e.getEntity() instanceof ItemFrame) {
+			ProtectionType pt = ProtectionNames.getProtectionType(e.getEntity().getWorld().getName());
+			if(pt==null) return;
+			if(e.getDamager() instanceof Player) { // by hand
+				Player p = (Player) e.getDamager();
+				if(Stash.isInSurvivalOrAdv(p)) {
+					switch (pt) {
+						case HUB: {
+							e.setCancelled(true);
+							break;
+						}
+						case MURDER_MUSTERY_GAME: {
+							e.setCancelled(true);
+							break;
+						}
+					}
+				}
+			} else { // with a bow or a mob did that (wtf?)
+				switch (pt) {
+				case HUB: {
+					e.setCancelled(true);
+					break;
+				}
+				case MURDER_MUSTERY_GAME: {
+					e.setCancelled(true);
+					break;
+				}
+			}
 			}
 		}
 	}
@@ -441,5 +481,13 @@ public class MainProtector implements Listener {
 	@EventHandler
 	public void onEntityDamageByEntityEvent(EntityDamageByEntityEvent e){
 		checkArmorStandDamage(e);
+		checkItemFrameItemDamage(e);
 	}
+	
+	// to do:
+	// maybe add protection from breaking doors (by zombies)
+	
+	// to think or ask:
+	// breaking armorstands and itemframe items with a sword in creative
+	// different void heights
 }
