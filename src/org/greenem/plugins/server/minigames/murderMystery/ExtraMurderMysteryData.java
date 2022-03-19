@@ -103,7 +103,11 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 	}
 	
 	private void hideNicknames() {
-		Team t = mainScoreboard.registerNewTeam("hidenicknames"); // works with _ ?
+		String hideNicknameTeamName = "hidenicknames";
+		Team t = mainScoreboard.getTeam(hideNicknameTeamName);
+		if(t==null) {
+			t = mainScoreboard.registerNewTeam(hideNicknameTeamName); // works with _ ?
+		}
 	    t.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER);
 		for (String s : actualPlayers) {
 			t.addEntry(s);
