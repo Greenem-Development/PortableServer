@@ -14,6 +14,7 @@ public class NamesAndLines {
 	public static String murderMysteryDetectiveBowName = ChatColor.YELLOW + "Detective's Bow";
 	public static String murderMysteryMurdererSwordName = ChatColor.RED + "Murderer's Sword";
 	public static String murderMysteryCompassName = ChatColor.YELLOW + "The bow's location";
+	public static String hideNicknamesTeamName = "hidenicknames";
 	
 	public static String getMinigameNameInFolder(Minigame minigame) {
 		switch (minigame) {
