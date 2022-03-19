@@ -22,6 +22,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.greenem.plugins.server.commands.AcceptTeam;
 import org.greenem.plugins.server.commands.LeaveTeam;
 import org.greenem.plugins.server.data.ConfigData;
+import org.greenem.plugins.server.data.Locs;
 import org.greenem.plugins.server.data.MinigamesStaticData;
 import org.greenem.plugins.server.data.OutsideData;
 import org.greenem.plugins.server.data.References;
@@ -33,6 +34,7 @@ import org.greenem.plugins.server.game.CreateTeamManager;
 import org.greenem.plugins.server.game.ExtraGameData;
 import org.greenem.plugins.server.game.Minigame;
 import org.greenem.plugins.server.minigames.murderMystery.MurderMysteryLocations;
+import org.greenem.plugins.server.miscellaneous.Preparations;
 import org.greenem.plugins.server.miscellaneous.Stash;
 import static org.greenem.plugins.server.util.SimpleLogger.log;import static org.greenem.plugins.server.util.SimpleLogger.debug;
 import org.greenem.plugins.server.worldProtection.MainProtector;
@@ -129,6 +131,12 @@ public class Main extends JavaPlugin implements Listener {
 		else if(cmd.getName().equalsIgnoreCase("dogoodgamerules")){
 			if(isSenderAPlayer(sender)) {
 				Stash.setGoodGamerules(((Player) sender).getWorld());
+			}
+		}
+		else if(cmd.getName().equalsIgnoreCase("hub")){
+			if(isSenderAPlayer(sender)) {
+				Preparations.preparePlayerInHub(p);
+				p.teleport(Locs.mainWorldSpawn); // could be in the same function
 			}
 		}
 		return false;

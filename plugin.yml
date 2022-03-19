@@ -36,3 +36,6 @@ commands:
    dogoodgamerules:
       description: No description
       default: true
+   hub:
+      description: No description
+      default: true

@@ -1,5 +1,7 @@
 package org.greenem.plugins.server.miscellaneous;
 
+import static org.greenem.plugins.server.util.SimpleLogger.log;
+import static org.greenem.plugins.server.util.SimpleLogger.debug;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -149,19 +151,22 @@ public class Stash {
         return null;
 	}
 
-	public static void addItemStack(Player p, ItemStack ItemStack, int slot) {
-		if(!p.getInventory().contains(ItemStack)) {
+	public static void addItemStack(Player p, ItemStack itemStack, int slot) {
+//		if(!p.getInventory().contains(itemStack)) {
 			if(p.getInventory().getItem(slot) == null) {
-				p.getInventory().setItem(slot, ItemStack);
+				p.getInventory().setItem(slot, itemStack);
+				debug("doesn't contain itemstack " + itemStack.getType());
 			}
-			else if(p.getInventory().getItem(slot).isSimilar(ItemStack)) {
-				ItemStack.setAmount(ItemStack.getAmount()+p.getInventory().getItem(slot).getAmount());
-				p.getInventory().setItem(slot, ItemStack); // what about enchantments atc.?
+			else if(p.getInventory().getItem(slot).isSimilar(itemStack)) {
+				itemStack.setAmount(itemStack.getAmount()+p.getInventory().getItem(slot).getAmount());
+				p.getInventory().setItem(slot, itemStack); // what about enchantments atc.?
+				debug("found similar itemstack " + itemStack.getType());
 			}
 			else {
-				p.getInventory().addItem(ItemStack);
+				p.getInventory().addItem(itemStack);
+				debug("contains itemstack " + itemStack.getType());
 			}
-		}
+//		}
 	}
 
 	public static void removeMaterial(Player p, Material material) {
@@ -170,7 +175,7 @@ public class Stash {
 		}
 	}
 	
-	public static void RemoveMaterial(Player p, int slot) {
+	public static void removeMaterial(Player p, int slot) {
 		//p.getInventory().remove(p.getInventory().getItem(slot));
 		p.getInventory().setItem(slot, new ItemStack(Material.AIR));
 	}

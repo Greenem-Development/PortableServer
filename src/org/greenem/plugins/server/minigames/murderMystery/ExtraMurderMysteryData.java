@@ -115,6 +115,8 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 	}
 	
 	private void teleportEveryone() {
+		world = Bukkit.getWorld(gm.worldName);
+		clearGoldOnFloor();
 		ArrayList<Location> allLocs = MurderMysteryLocations.gameStartSpawnLocations.get(gm.map);
 		for (String pName : actualPlayers) {
 			if(Bukkit.getPlayerExact(pName)!=null) {
@@ -122,7 +124,6 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 				float rotation = rand.nextFloat(-180, 180);
 				Location loc = allLocs.get(spawnLocNum).clone().add(0.5, 0, 0.5);
 				loc.setYaw(rotation);
-				world = Bukkit.getWorld(gm.worldName);
 				loc.setWorld(world);
 				Bukkit.getPlayerExact(pName).teleport(loc);
 				loc.getWorld().setTime(MinigamesStaticData.getTimeForMap(gm.minigameType, gm.map));
@@ -667,6 +668,7 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 					sg.item = item;
 					sg.location = l;
 					sg.number = number;
+					debug("added: " + GoldSpawnExistingItems.toString());
 					GoldSpawnExistingItems.add(sg);
 					goldCurrentlySpawned++;
 					GoldSpawnLocationsIndexesAlreayUsed.add(number);
@@ -675,6 +677,88 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 			skipTimer = 0;
 		}
 		skipTimer++; // skips first time too, maybe ballance that
+	}
+	
+	@EventHandler
+	public void onItemPickup(EntityPickupItemEvent e) {
+		if(e.getEntity() instanceof Player) {
+			if(e.getEntity().getWorld().equals(world)) {
+				Player p = (Player) e.getEntity();
+				if(murderers.contains(p.getName()) || innocents.contains(p.getName())) {
+					ItemStack itemPickedUp = e.getItem().getItemStack();
+					if(isItemStackTheGold(itemPickedUp)) {
+						debug("picked up " + itemPickedUp.getAmount() + " gold");
+						goldCurrentlySpawned--;
+						debug("goldCurrentlySpawned " + goldCurrentlySpawned);
+						int hasGold = 0;
+						for (int i = 0; i < p.getInventory().getSize(); i++) {
+							ItemStack itemStack = p.getInventory().getItem(i);
+							if(isItemStackTheGold(itemStack)) {
+								hasGold += itemStack.getAmount();
+								p.getInventory().setItem(i, new ItemStack(Material.AIR));
+							}
+						}
+						hasGold+=itemPickedUp.getAmount(); // just picked up
+						debug("hasGold " + hasGold);
+						if(hasGold>=10) {
+							int getsArrows = hasGold/10; // 10 can be customisable
+							debug("getsArrows " + getsArrows);
+							int hasArrows = 0;
+							for (int i = 0; i < p.getInventory().getSize(); i++) {
+								ItemStack itemStack = p.getInventory().getItem(i);
+								if(itemStack!=null && itemStack.getType()==Material.ARROW) {
+									hasArrows += itemStack.getAmount();
+									p.getInventory().setItem(i, new ItemStack(Material.AIR));
+								}
+							}
+							//                                      make last or fist gold pos in inventory to put there
+							debug("hasArrows " + hasArrows);
+							Stash.addItemStack(p, new ItemStack(Material.ARROW, (hasArrows + getsArrows)), 8);
+							//Stash.removeMaterial(p, Material.GOLD_INGOT);
+							/*for (int i = 0; i < p.getInventory().getSize(); i++) {
+								ItemStack itemStack = p.getInventory().getItem(i);
+								if(itemStack!=null && itemStack.getType()==Material.GOLD_INGOT) {
+									p.getInventory().setItem(i, new ItemStack(Material.AIR));
+								}
+							}*/
+							if(!p.getInventory().contains(Material.BOW)) {
+								Stash.addItemStack(p, getNormalBow(), 0);
+							}
+							ItemStack is = null;
+							debug("%10 " + hasGold%10);
+							if(hasGold%10!=0) {
+								is = getSpecialGoldItemStack();
+								is.setAmount(hasGold%10);
+								debug("amount " + is.getAmount());
+								Stash.addItemStack(p, is, 0);
+							}
+							/*else {
+								Stash.removeMaterial(p, Material.GOLD_INGOT);
+							}*/
+						}
+						for (int i = 0; i < GoldSpawnExistingItems.size(); i++) {
+							/*if(GoldSpawnExistingItems.get(i).location.distance(e.getItem().getLocation()) < goldPickupDeleteFromUsedThreshold) {
+								debug("removing num " + GoldSpawnExistingItems.get(i).number);
+								debug("the loc is " + GoldSpawnExistingItems.get(i).location.toString());
+								GoldSpawnLocationsIndexesAlreayUsed.remove(Integer.valueOf(GoldSpawnExistingItems.get(i).number));
+								GoldSpawnExistingItems.remove(i);
+							}*/
+//							debug(GoldSpawnExistingItems.get(i).number);
+//							debug(GoldSpawnExistingItems.get(i).item.getLocation());
+//							debug(GoldSpawnExistingItems.get(i).location);
+							if(GoldSpawnExistingItems.get(i).item.getItemStack().equals(itemPickedUp)) {
+								debug("removing num " + GoldSpawnExistingItems.get(i).number);
+								debug("the loc is " + GoldSpawnExistingItems.get(i).location.toString());
+								GoldSpawnLocationsIndexesAlreayUsed.remove(Integer.valueOf(GoldSpawnExistingItems.get(i).number));
+								GoldSpawnExistingItems.remove(i);
+							}
+						}
+						debug("GoldSpawnExistingItems" + GoldSpawnExistingItems.toString());
+						debug("GoldSpawnLocationsIndexesAlreayUsed" + GoldSpawnLocationsIndexesAlreayUsed.toString());
+					}
+				}
+			}
+		}
 	}
 	
 	private ItemStack getSpecialGoldItemStack() {
@@ -743,62 +827,8 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 		return false;
 	}
 	
-	@EventHandler public void onItemPickup(EntityPickupItemEvent e) {
-		if(e.getEntity() instanceof Player) {
-			if(e.getEntity().getWorld().equals(world)) {
-				Player p = (Player) e.getEntity();
-				if(murderers.contains(p.getName()) || innocents.contains(p.getName())) {
-					ItemStack itemPickedUp = e.getItem().getItemStack();
-					if(isItemStackTheGold(itemPickedUp)) {
-						debug(itemPickedUp.getAmount());
-						goldCurrentlySpawned--;
-						debug("goldCurrentlySpawned " + goldCurrentlySpawned);
-						int hasGold = 0;
-						for (int i = 0; i < p.getInventory().getSize(); i++) {
-							ItemStack itemStack = p.getInventory().getItem(i);
-							if(isItemStackTheGold(itemStack)) {
-								hasGold += itemStack.getAmount();
-							}
-						}
-						hasGold+=itemPickedUp.getAmount(); // just picked up
-						debug("hasGold " + hasGold);
-						if(hasGold>=10) {
-							int getsArrows = hasGold/10; // 10 can be customisable
-							debug("getsArrows " + getsArrows);
-							int hasArrows = 0;
-							for (int i = 0; i < p.getInventory().getSize(); i++) {
-								ItemStack itemStack = p.getInventory().getItem(i);
-								if(itemStack!=null && itemStack.getType()==Material.ARROW) {
-									hasArrows += itemStack.getAmount();
-								}
-							}
-							debug("hasArrows " + hasArrows);
-							Stash.addItemStack(p, new ItemStack(Material.ARROW, hasArrows + getsArrows), 8);
-							Stash.removeMaterial(p, Material.GOLD_INGOT);
-							if(!p.getInventory().contains(Material.BOW)) {
-								Stash.addItemStack(p, getNormalBow(), 0);
-							}
-							ItemStack is = getSpecialGoldItemStack();
-							if(hasGold%10!=0) {
-								is.setAmount(hasGold%10);
-								Stash.addItemStack(p, is, 0);
-							}
-							else {
-								Stash.removeMaterial(p, Material.GOLD_INGOT);
-							}
-						}
-					}
-					for (int i = 0; i < GoldSpawnExistingItems.size(); i++) {
-						if(GoldSpawnExistingItems.get(i).location.distance(e.getItem().getLocation()) < goldPickupDeleteFromUsedThreshold) {
-							debug("removing num " + GoldSpawnExistingItems.get(i).number);
-							debug("the loc is " + GoldSpawnExistingItems.get(i).location.toString());
-							GoldSpawnLocationsIndexesAlreayUsed.remove(Integer.valueOf(GoldSpawnExistingItems.get(i).number));
-							GoldSpawnExistingItems.remove(i);
-						}
-					}
-				}
-			}
-		}
+	public static void main (String[] args) {
+		System.out.println(10%10);
 	}
 	
 	private void onGameEnd() {
@@ -812,11 +842,13 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 				// tp everyone to spawn
 				// clear gold
 				clearGoldOnFloor();
+				temporaryWayToStopTheGame();
 			}
 		}, 20*5);
 	}
 	
 	private void clearGoldOnFloor() {
+//		if(world==null) return;
 		for (Entity e : world.getEntities()) {
 			if(e.getType()==EntityType.DROPPED_ITEM) {
 				e.remove();
@@ -841,6 +873,15 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 			bowDoesWhatPartOfMurderersHp = 1;
 		} else {
 			bowDoesWhatPartOfMurderersHp = 2;
+		}
+	}
+	
+	private void temporaryWayToStopTheGame() {
+		for (Player p : Bukkit.getOnlinePlayers()) {
+			if(p.getWorld()==world) {
+				p.chat("/minigametest2");
+				break;
+			}
 		}
 	}
 }
