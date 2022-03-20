@@ -4,11 +4,27 @@
  * This is a general purpose Gradle build.
  * Learn more about Gradle by exploring our samples at https://docs.gradle.org/7.4/samples
  */
+
 apply plugin: 'java'
 
-group 'org.greenem.plugins.Manhunt'
+group 'org.greenem.plugins.server'
 version '3.0.0'
 
+//sourceSets {
+//        main.java.srcDirs = ['src']
+//        main.resources.srcDirs = ['src']
+//}
+sourceSets {
+    main {
+        java {
+            srcDirs 'src'
+        }
+        resources {
+            srcDir 'resources' 
+        }
+    }
+ }
+    
 repositories {
     mavenCentral()
     maven {
@@ -18,4 +34,24 @@ repositories {
 
 dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.18.1-R0.1-SNAPSHOT'
+    implementation 'commons-io:commons-io:2.11.0'
+}
+
+
+jar {
+	archiveBaseName = 'Server'
+    destinationDirectory.set(file("G:/SERVERS/PortableServer 3.0/plugins"))
+    configurations.implementation.canBeResolved=true
+    from { configurations.implementation.collect {
+      //it.canBeResolved = true 
+      it.isDirectory() ? it : zipTree(it) } 
+    }
+    //with jar
+}
+
+task welcome {
+    doLast {
+        println configurations.each { i -> println i
+        }
+    }
 }
