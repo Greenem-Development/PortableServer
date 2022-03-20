@@ -39,6 +39,7 @@ import org.greenem.plugins.server.miscellaneous.Stash;
 import static org.greenem.plugins.server.util.SimpleLogger.log;import static org.greenem.plugins.server.util.SimpleLogger.debug;
 import org.greenem.plugins.server.worldProtection.MainProtector;
 import org.greenem.plugins.server.worldProtection.PlaceDependentEvents;
+import org.greenem.plugins.server.worldsVersionControl.BuildingServerOperations;
 
 public class Main extends JavaPlugin implements Listener {
 	
@@ -137,6 +138,11 @@ public class Main extends JavaPlugin implements Listener {
 			if(isSenderAPlayer(sender)) {
 				Preparations.preparePlayerInHub(p);
 				p.teleport(Locs.mainWorldSpawn); // could be in the same function
+			}
+		}
+		else if(cmd.getName().equalsIgnoreCase("filetest")){
+			if(isSenderAPlayerOrConsole(sender)) {
+				BuildingServerOperations.test();
 			}
 		}
 		return false;
@@ -240,6 +246,7 @@ public class Main extends JavaPlugin implements Listener {
 	public void initAll() {
 		RegisterAllCommands();
 		InitFiles();
+		BuildingServerOperations.init();
 		RegisterAllListeners();
 		MinigamesStaticData.init();
 		MurderMysteryLocations.init();
@@ -250,8 +257,8 @@ public class Main extends JavaPlugin implements Listener {
 	public void InitFiles() {
 		OutsideData.configsDirectory = new File(getServer().getWorldContainer(), "configs");
 		OutsideData.mainConfigDirectory = new File(OutsideData.configsDirectory, "Server");
-		
 		OutsideData.mainConfigDirectory.mkdirs();
+		BuildingServerOperations.buildingServerLocation = new File("G:\\SERVERS\\Map Building Server");
 	}
 	
 	public void RegisterAllCommands() {

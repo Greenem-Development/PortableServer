@@ -39,3 +39,6 @@ commands:
    hub:
       description: No description
       default: true
+   filetest:
+      description: No description
+      default: true
