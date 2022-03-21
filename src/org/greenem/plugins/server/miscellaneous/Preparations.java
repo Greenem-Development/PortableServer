@@ -6,6 +6,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 import org.greenem.plugins.server.data.NamesAndLines;
 import org.greenem.plugins.server.game.Minigame;
 
@@ -84,6 +85,9 @@ public class Preparations {
 	
 	public static void removeFromTeam(Player p, String team) {
 		Scoreboard mainScoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
-		mainScoreboard.getTeam(team).removeEntry(p.getName());
+		Team t = mainScoreboard.getTeam(team);
+		if(t!=null) {
+			t.removeEntry(p.getName());
+		}
 	}
 }

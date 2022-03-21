@@ -45,3 +45,6 @@ commands:
    replaceworld:
       description: No description
       default: true
+   unloadallworlds:
+      description: No description
+      default: true

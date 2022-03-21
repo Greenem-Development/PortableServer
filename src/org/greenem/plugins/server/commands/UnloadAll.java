@@ -17,7 +17,7 @@ public class UnloadAll implements CommandExecutor {
 		if(command.getName().equalsIgnoreCase("unloadallworlds")) {
 			if(Main.isSenderTheConsole(sender)) {
 				unloadAllWorlds(sender.getName());
-				sender.sendMessage(ChatColor.GREEN + "You have been unloaded!");
+				sender.sendMessage(ChatColor.GREEN + "All the worlds have been unloaded!");
 			}
 		}
 		return false;

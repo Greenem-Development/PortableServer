@@ -117,6 +117,7 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 	private void teleportEveryone() {
 		world = Bukkit.getWorld(gm.worldName);
 		clearGoldOnFloor();
+		world.setTime(MinigamesStaticData.getTimeForMap(gm.minigameType, gm.map));
 		ArrayList<Location> allLocs = MurderMysteryLocations.gameStartSpawnLocations.get(gm.map);
 		for (String pName : actualPlayers) {
 			if(Bukkit.getPlayerExact(pName)!=null) {
@@ -125,8 +126,7 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 				Location loc = allLocs.get(spawnLocNum).clone().add(0.5, 0, 0.5);
 				loc.setYaw(rotation);
 				loc.setWorld(world);
-				Bukkit.getPlayerExact(pName).teleport(loc);
-				loc.getWorld().setTime(MinigamesStaticData.getTimeForMap(gm.minigameType, gm.map));
+				Bukkit.getPlayerExact(pName).teleport(loc);				
 			}
 		}
 	}
@@ -847,8 +847,12 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 			public void run() {
 				// tp everyone to spawn
 				// clear gold
-				clearGoldOnFloor();
-				temporaryWayToStopTheGame();
+				if(world!=null) {
+					clearGoldOnFloor();
+					temporaryWayToStopTheGame();
+				} else {
+					log(ChatColor.RED + "The world is null in onGameEnd!");
+				}
 			}
 		}, 20*5);
 	}
