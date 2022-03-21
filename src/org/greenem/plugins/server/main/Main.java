@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
 import org.bukkit.event.Listener;
+import org.apache.commons.io.FileUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -40,6 +41,8 @@ import static org.greenem.plugins.server.util.SimpleLogger.log;import static org
 import org.greenem.plugins.server.worldProtection.MainProtector;
 import org.greenem.plugins.server.worldProtection.PlaceDependentEvents;
 import org.greenem.plugins.server.worldsVersionControl.BuildingServerOperations;
+import org.greenem.plugins.server.worldsVersionControl.ReplaceWorldCommand;
+import org.greenem.plugins.server.worldsVersionControl.ReplaceWorldCompleter;
 
 public class Main extends JavaPlugin implements Listener {
 	
@@ -53,7 +56,7 @@ public class Main extends JavaPlugin implements Listener {
 		
 		initAll();
 		
-		loadConfig();
+		ConfigData.loadConfig();
 	}
 	
 	@Override
@@ -76,7 +79,7 @@ public class Main extends JavaPlugin implements Listener {
 			if(!isSenderAPlayerOrConsole(sender)) {
 				return true;
 			}
-			loadConfig();
+			ConfigData.loadConfig();
 		}
 		else if(cmd.getName().equalsIgnoreCase("gm")){
 			if(isSenderAPlayerOrConsole(sender)) {
@@ -145,82 +148,12 @@ public class Main extends JavaPlugin implements Listener {
 				BuildingServerOperations.test();
 			}
 		}
+		else if(cmd.getName().equalsIgnoreCase("replaceworld")){
+			if(isSenderAPlayerOrConsole(sender)) {
+				ReplaceWorldCommand.replaceWorldCommand(sender, args);
+			}
+		}
 		return false;
-	}
-	
-	public void logCastEx(String currentKey) {
-		log("Wrong value type for \"" + currentKey + "\" in the config");
-	}
-	
-	public void loadConfig() {
-		File f = new File(OutsideData.mainConfigDirectory, "mainconfig.yml");
-		f.getParentFile().mkdirs();
-		
-		YamlConfiguration c = YamlConfiguration.loadConfiguration(f);
-		YamlConfiguration cOld = YamlConfiguration.loadConfiguration(f);
-		String currentKey = null;
-
-		try {
-			currentKey = "allow-gm-command-for-ops";
-			if (c.get(currentKey) == null) {
-				c.set(currentKey, true);
-			} else {
-				try {
-					ConfigData.allowGmCommandForOps = (boolean) c.get(currentKey);
-				} catch (ClassCastException e) {
-					logCastEx(currentKey);
-				}
-			}
-			currentKey = "allow-heal-command-for-ops";
-			if (c.get(currentKey) == null) {
-				c.set(currentKey, true);
-			} else {
-				try {
-					ConfigData.allowHealCommandForOps = (boolean) c.get(currentKey);
-				} catch (ClassCastException e) {
-					logCastEx(currentKey);
-				}
-			}
-			currentKey = "allow-invites-before-reload";
-			if (c.get(currentKey) == null) {
-				c.set(currentKey, true);
-			} else {
-				try {
-					ConfigData.allowInvitesBeforeReload = (boolean) c.get(currentKey);
-				} catch (ClassCastException e) {
-					logCastEx(currentKey);
-				}
-			}
-			currentKey = "allow-invites-nickname-mismatch";
-			if (c.get(currentKey) == null) {
-				c.set(currentKey, false);
-			} else {
-				try {
-					ConfigData.allowInvitesNicknameMismatch = (boolean) c.get(currentKey);
-				} catch (ClassCastException e) {
-					logCastEx(currentKey);
-				}
-			}
-		} catch (Throwable t) {
-			log("Error while reading \"" + currentKey + "\" from the config");
-		}
-		
-		// DONE
-		
-		boolean same = true;
-	    for(String key : c.getKeys(false)) {
-	        if(!cOld.contains(key)) {
-	        	same = false;
-	        }
-	    }
-	    
-		if (!same) {
-			try {
-				c.save(f);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
 	}
 	
 	public static boolean isSenderAPlayer(CommandSender sender) {
@@ -257,7 +190,9 @@ public class Main extends JavaPlugin implements Listener {
 	public void InitFiles() {
 		OutsideData.configsDirectory = new File(getServer().getWorldContainer(), "configs");
 		OutsideData.mainConfigDirectory = new File(OutsideData.configsDirectory, "Server");
+		System.out.println(FileUtils.ONE_EB);
 		OutsideData.mainConfigDirectory.mkdirs();
+//		FileUtils.forceMkdir(OutsideData.mainConfigDirectory); // to prevent launching with non-gradle build (default eclipse export). DOESN'T WORK
 		BuildingServerOperations.buildingServerLocation = new File("G:\\SERVERS\\Map Building Server");
 	}
 	
@@ -265,7 +200,8 @@ public class Main extends JavaPlugin implements Listener {
 		getCommand("acceptteam").setExecutor(new AcceptTeam());
 		getCommand("leaveteam").setExecutor(new LeaveTeam());		
 		getCommand("createteam").setExecutor(new CreateTeamManager());
-//		getCommand("command").setTabCompleter(new EmptyCompleterNoArgs());
+		getCommand("replaceworld").setTabCompleter(new ReplaceWorldCompleter());
+//		getCommand("LATER").setTabCompleter(new EmptyCompleterNoArgs());
 	}
 	
 	public void RegisterAllListeners() {

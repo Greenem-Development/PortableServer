@@ -42,3 +42,6 @@ commands:
    filetest:
       description: No description
       default: true
+   replaceworld:
+      description: No description
+      default: true
