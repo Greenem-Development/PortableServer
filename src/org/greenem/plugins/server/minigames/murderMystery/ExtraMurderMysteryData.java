@@ -695,7 +695,6 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 							ItemStack itemStack = p.getInventory().getItem(i);
 							if(isItemStackTheGold(itemStack)) {
 								hasGold += itemStack.getAmount();
-								p.getInventory().setItem(i, new ItemStack(Material.AIR));
 							}
 						}
 						hasGold+=itemPickedUp.getAmount(); // just picked up
@@ -708,6 +707,13 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 								ItemStack itemStack = p.getInventory().getItem(i);
 								if(itemStack!=null && itemStack.getType()==Material.ARROW) {
 									hasArrows += itemStack.getAmount();
+									p.getInventory().setItem(i, new ItemStack(Material.AIR));
+								}
+							}
+							for (int i = 0; i < p.getInventory().getSize(); i++) {
+								ItemStack itemStack = p.getInventory().getItem(i);
+								if(isItemStackTheGold(itemStack)) {
+									hasGold += itemStack.getAmount();
 									p.getInventory().setItem(i, new ItemStack(Material.AIR));
 								}
 							}
@@ -828,7 +834,7 @@ public class ExtraMurderMysteryData implements ExtraGameData {
 	}
 	
 	public static void main (String[] args) {
-		System.out.println(10%10);
+//		System.out.println(10%10);
 	}
 	
 	private void onGameEnd() {

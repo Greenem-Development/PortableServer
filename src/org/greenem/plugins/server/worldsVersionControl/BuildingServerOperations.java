@@ -118,7 +118,7 @@ public class BuildingServerOperations {
 	
 	public static void actualReplaceWorld(File from, File to) {
 		try {
-			FileUtils.deleteDirectory(to);
+			FileUtils.deleteDirectory(to); // wanted to delete each folder separate to keep git repo in world folder, but repos should be in source folder
 			to.mkdir();
 			try {
 				FileUtils.copyDirectory(from, to, new WorldCopyFileFilter());

@@ -2,6 +2,10 @@ package org.greenem.plugins.server.worldsVersionControl;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.greenem.plugins.server.util.SmallUtils;
+
+import static org.greenem.plugins.server.util.SimpleLogger.log;
+import static org.greenem.plugins.server.util.SimpleLogger.debug;
 
 public class ReplaceWorldCommand {
 	public static void replaceWorldCommand(CommandSender sender, String[] args) {
@@ -20,8 +24,11 @@ public class ReplaceWorldCommand {
 		}
 		if(BuildingServerOperations.buildingServerWorlds.contains(from)) {
 			String message = BuildingServerOperations.replaceWorlds(from, to);
-			if(message!=null) {
+			message = SmallUtils.deleteMultilineNullsInString(message);
+			if(!message.trim().equals("")) {
 				sender.sendMessage(message);
+			} else {
+				sender.sendMessage(ChatColor.GREEN + "Successfully replaced the world(s)"); // add how many worlds
 			}
 		}
 		else {

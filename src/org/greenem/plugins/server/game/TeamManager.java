@@ -51,6 +51,7 @@ public class TeamManager implements Listener {
 	}
 	
 	public void openGui(Player p) {
+		updateGui();
 		p.openInventory(gameStartScreenLeader);
 	}
 	
@@ -115,8 +116,8 @@ public class TeamManager implements Listener {
 			ChatColor color = ChatColor.GRAY;
 			String exclamationMark = "";
 			int pos = getMapListPosInArray(selectedMinigame);
-			System.out.println(settingsNumbers.toString());
-			System.out.println(pos);
+			//System.out.println(settingsNumbers.toString());
+			//System.out.println(pos);
 			if(strAval.equals("no") && ((settingsNumbers.size()-1==pos) || (settingsNumbers.size()>pos && settingsNumbers.get(pos)==i))) { // weird ( && i!=0)
 				color = ChatColor.RED;
 				exclamationMark = "!";

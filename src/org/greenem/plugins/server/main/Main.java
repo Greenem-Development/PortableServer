@@ -22,6 +22,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.greenem.plugins.server.commands.AcceptTeam;
 import org.greenem.plugins.server.commands.LeaveTeam;
+import org.greenem.plugins.server.commands.UnloadAll;
 import org.greenem.plugins.server.data.ConfigData;
 import org.greenem.plugins.server.data.Locs;
 import org.greenem.plugins.server.data.MinigamesStaticData;
@@ -176,6 +177,14 @@ public class Main extends JavaPlugin implements Listener {
 		return true;
 	}
 	
+	public static boolean isSenderTheConsole(CommandSender sender) {
+		if(!(sender instanceof ConsoleCommandSender)) {
+			sender.sendMessage(ChatColor.RED + "You can use it only from console!");
+			return false;
+		}
+		return true;
+	}
+	
 	public void initAll() {
 		RegisterAllCommands();
 		InitFiles();
@@ -190,7 +199,6 @@ public class Main extends JavaPlugin implements Listener {
 	public void InitFiles() {
 		OutsideData.configsDirectory = new File(getServer().getWorldContainer(), "configs");
 		OutsideData.mainConfigDirectory = new File(OutsideData.configsDirectory, "Server");
-		System.out.println(FileUtils.ONE_EB);
 		OutsideData.mainConfigDirectory.mkdirs();
 //		FileUtils.forceMkdir(OutsideData.mainConfigDirectory); // to prevent launching with non-gradle build (default eclipse export). DOESN'T WORK
 		BuildingServerOperations.buildingServerLocation = new File("G:\\SERVERS\\Map Building Server");
@@ -201,6 +209,7 @@ public class Main extends JavaPlugin implements Listener {
 		getCommand("leaveteam").setExecutor(new LeaveTeam());		
 		getCommand("createteam").setExecutor(new CreateTeamManager());
 		getCommand("replaceworld").setTabCompleter(new ReplaceWorldCompleter());
+		getCommand("unloadallworlds").setExecutor(new UnloadAll());
 //		getCommand("LATER").setTabCompleter(new EmptyCompleterNoArgs());
 	}
 	
